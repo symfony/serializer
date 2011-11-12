@@ -54,7 +54,10 @@ class XmlEncoder extends SerializerAwareEncoder implements EncoderInterface, Dec
      */
     public function decode($data, $format)
     {
-        $xml = simplexml_load_string($data);
+        $xml = @simplexml_load_string($data);
+		if ($xml === false) {
+			return null;
+		}
         if (!$xml->count()) {
             if (!$xml->attributes()) {
                 return (string) $xml;
