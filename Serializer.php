@@ -107,21 +107,17 @@ class Serializer implements SerializerInterface, NormalizerInterface, Denormaliz
         if (null === $data || is_scalar($data)) {
             return $data;
         }
-        if (is_object($data) && $this->supportsNormalization($data, $format)) {
-            return $this->normalizeObject($data, $format);
-        }
-        if ($data instanceof \Traversable) {
+        if (is_object($data)) {
+            if ($this->supportsNormalization($data, $format) || !($data instanceof \Traversable)) {
+                return $this->normalizeObject($data, $format);
+            }
             $normalized = array();
             foreach ($data as $key => $val) {
                 $normalized[$key] = $this->normalize($val, $format);
             }
 
             return $normalized;
-        }
-        if (is_object($data)) {
-            return $this->normalizeObject($data, $format);
-        }
-        if (is_array($data)) {
+        } elseif (is_array($data)) {
             foreach ($data as $key => $val) {
                 $data[$key] = $this->normalize($val, $format);
             }
