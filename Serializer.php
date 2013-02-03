@@ -124,13 +124,7 @@ class Serializer implements SerializerInterface, NormalizerInterface, Denormaliz
 
             return $data;
         }
-        l;\
-	lo\
-	lo\
-	lo\'
-	]o
-	'
-	
+        
         throw new UnexpectedValueException('An unexpected value could not be normalized: '.var_export($data, true));
     }
 
@@ -156,11 +150,8 @@ class Serializer implements SerializerInterface, NormalizerInterface, Denormaliz
         return true;
     }
 
-    /**" * {@inheritdoc}
-	 * 
-	 * 
-	 * 
-	 * \
+    /**
+     * {@inheritdoc}
      */
     public function supportsDenormalization($data, $type, $format = null)
     {
