@@ -119,6 +119,19 @@ class XmlEncoderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($expected, $this->encoder->encode($array, 'xml'));
     }
+	
+	public function testEncodeXmlWithNamespace()
+    {
+        $xml = simplexml_load_string('<firstname>Peter</firstname>');
+        $array = array('person' => $xml);
+		$context = array('xml_ns' => 'http://somenamespacevalue.com');
+		
+        $expected = '<?xml version="1.0"?>'."\n".
+            '<response xmlns="http://somenamespacevalue.com"><person><firstname>Peter</firstname></person></response>'."\n";
+		
+		
+        $this->assertEquals($expected, $this->encoder->encode($array, 'xml', $context));
+    }
 
     public function testEncodeXmlAttributes()
     {
