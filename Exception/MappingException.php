@@ -12,10 +12,10 @@
 namespace Symfony\Component\Serializer\Exception;
 
 /**
- * RuntimeException.
+ * MappingException
  *
- * @author Johannes M. Schmitt <schmittjoh@gmail.com>
+ * @author Kévin Dunglas <dunglas@gmail.com>
  */
-class RuntimeException extends \RuntimeException implements Exception
+class MappingException extends RuntimeException
 {
 }
