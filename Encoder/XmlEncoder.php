@@ -68,6 +68,10 @@ class XmlEncoder extends SerializerAwareEncoder implements EncoderInterface, Dec
         } else {
             $this->appendNode($this->dom, $data, $xmlRootNodeName);
         }
+			
+		if (isset($context['xml_ns'])) {
+			$this->dom->createAttributeNS($context['xml_ns'], 'xmlns');
+		}
 
         return $this->dom->saveXML();
     }
@@ -549,6 +553,7 @@ class XmlEncoder extends SerializerAwareEncoder implements EncoderInterface, Dec
             // whether the document is standalone
             'xml_standalone' => 'xmlStandalone',
         );
+		
         foreach ($xmlOptions as $xmlOption => $documentProperty) {
             if (isset($context[$xmlOption])) {
                 $document->$documentProperty = $context[$xmlOption];
