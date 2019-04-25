@@ -116,10 +116,36 @@ class DateTimeNormalizer implements NormalizerInterface, DenormalizerInterface, 
         }
 
         try {
-            return \DateTime::class === $class ? new \DateTime($data, $timezone) : new \DateTimeImmutable($data, $timezone);
+            return $this->correctTimezone(\DateTime::class === $class ? new \DateTime($data, $timezone) : new \DateTimeImmutable($data, $timezone), $timezone);
         } catch (\Exception $e) {
             throw new NotNormalizableValueException($e->getMessage(), $e->getCode(), $e);
         }
+    }
+
+    /**
+     * correctTimeZone
+     * PHP docs say when created a new DateTime object:
+     *
+     * The $timezone parameter and the current timezone are ignored when the $time parameter either is a UNIX timestamp (e.g. @946684800) or specifies a timezone (e.g. 2010-01-28T15:00:00+02:00).
+     *
+     * This means the behaviour in this normalizer is different when the timezone is applied in the constructor or later with setTimezone.
+     *
+     * If you specify the timezone when denormalizing, you'd expect all datetimes to come out in that timezone, regardless of (user) input.
+     *
+     * @param \DateTimeInterface $datetime
+     * @param \DateTimeZone $timezone
+     * @return \DateTime|\DateTimeImmutable|\DateTimeInterface
+     * @throws \Exception
+     */
+    private function correctTimeZone(\DateTimeInterface $datetime, \DateTimeZone $timezone)
+    {
+        $immutable = false;
+        if ($datetime instanceof \DateTimeImmutable) {
+            $datetime = new \DateTime($datetime->format(\DATE_RFC3339), $timezone);
+            $immutable = true;
+        }
+        $datetime->setTimezone($timezone);
+        return $immutable ? new \DateTimeImmutable($datetime->format(\DATE_RFC3339), $timezone) : $datetime ;
     }
 
     /**
