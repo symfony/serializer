@@ -92,7 +92,7 @@ class AttributeMetadata implements AttributeMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function getMaxDepth()
+    public function getMaxDepth(): int
     {
         return $this->maxDepth;
     }
