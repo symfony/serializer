@@ -12,7 +12,7 @@
 namespace Symfony\Component\Serializer;
 
 /**
- * Defines the interface of encoders.
+ * Class accepting a serializer.
  *
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
