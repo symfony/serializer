@@ -36,9 +36,8 @@ class CustomNormalizer implements NormalizerInterface, DenormalizerInterface, Se
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
         $object = $this->extractObjectToPopulate($type, $context) ?? new $type();
-        $object->denormalize($this->serializer, $data, $format, $context);
 
-        return $object;
+        return $object->denormalize($this->serializer, $data, $format, $context);
     }
 
     /**
