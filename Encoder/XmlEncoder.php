@@ -287,7 +287,7 @@ class XmlEncoder implements EncoderInterface, DecoderInterface, NormalizationAwa
     final protected function isElementNameValid(string $name): bool
     {
         return $name &&
-            !str_contains($name, ' ') &&
+            false === strpos($name, ' ') &&
             preg_match('#^[\pL_][\pL0-9._:-]*$#ui', $name);
     }
 
@@ -413,7 +413,7 @@ class XmlEncoder implements EncoderInterface, DecoderInterface, NormalizationAwa
         if (\is_array($data) || ($data instanceof \Traversable && (null === $this->serializer || !$this->serializer->supportsNormalization($data, $format)))) {
             foreach ($data as $key => $data) {
                 //Ah this is the magic @ attribute types.
-                if (str_starts_with($key, '@') && $this->isElementNameValid($attributeName = substr($key, 1))) {
+                if (0 === strpos($key, '@') && $this->isElementNameValid($attributeName = substr($key, 1))) {
                     if (!is_scalar($data)) {
                         $data = $this->serializer->normalize($data, $format, $context);
                     }

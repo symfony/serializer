@@ -149,7 +149,7 @@ class CsvEncoder implements EncoderInterface, DecoderInterface
         fwrite($handle, $data);
         rewind($handle);
 
-        if (str_starts_with($data, self::UTF8_BOM)) {
+        if (0 === strpos($data, self::UTF8_BOM)) {
             fseek($handle, \strlen(self::UTF8_BOM));
         }
 
