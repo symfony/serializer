@@ -620,8 +620,8 @@ class PropertyNormalizerTest extends TestCase
 
             $this->fail(\sprintf('Expected a "%s".', PartialDenormalizationException::class));
         } catch (PartialDenormalizationException $e) {
-            $this->assertCount(1, $e->getErrors());
-            $error = $e->getErrors()[0];
+            $this->assertCount(1, $e->getNotNormalizableValueErrors());
+            $error = $e->getNotNormalizableValueErrors()[0];
             $this->assertInstanceOf(NotNormalizableValueException::class, $error);
             $this->assertSame('name', $error->getPath());
             $this->assertSame('array', $error->getCurrentType());

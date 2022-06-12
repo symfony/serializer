@@ -15,6 +15,7 @@ use Symfony\Component\PropertyAccess\Exception\NoSuchIndexException;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\Exception\UninitializedPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
+use Symfony\Component\PropertyAccess\PropertyPath;
 use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -421,7 +422,11 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
         }
 
         if ($extraAttributes) {
-            throw new ExtraAttributesException($extraAttributes);
+            $extraAttributeException = new ExtraAttributesException(array_map(static fn (string $extraAttribute) => PropertyPath::append($context['deserialization_path'] ?? '', $extraAttribute), $extraAttributes));
+            if (!isset($context['extra_attributes_exceptions'])) {
+                throw $extraAttributeException;
+            }
+            $context['extra_attributes_exceptions'][] = $extraAttributeException;
         }
 
         return $object;
