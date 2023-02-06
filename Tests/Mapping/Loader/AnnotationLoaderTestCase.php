@@ -25,7 +25,7 @@ use Symfony\Component\Serializer\Tests\Mapping\TestClassMetadataFactory;
 /**
  * @author Kévin Dunglas <dunglas@gmail.com>
  */
-abstract class AnnotationLoaderTest extends TestCase
+abstract class AnnotationLoaderTestCase extends TestCase
 {
     use ContextMappingTestTrait;
 
