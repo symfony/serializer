@@ -334,8 +334,11 @@ abstract class AbstractNormalizer implements NormalizerInterface, DenormalizerIn
                 $attributeContext = $this->getAttributeDenormalizationContext($class, $paramName, $context);
                 $key = $this->nameConverter ? $this->nameConverter->normalize($paramName, $class, $format, $context) : $paramName;
 
+                $subContext = $context;
+                $subContext['deserialization_path'] = ($context['deserialization_path'] ?? false) ? sprintf('%s.%s', $context['deserialization_path'], $key) : $key;
+
                 $allowed = false === $allowedAttributes || \in_array($paramName, $allowedAttributes);
-                $ignored = !$this->isAllowedAttribute($class, $paramName, $format, $context);
+                $ignored = !$this->isAllowedAttribute($class, $paramName, $format, $subContext);
                 if ($constructorParameter->isVariadic()) {
                     if ($allowed && !$ignored && (isset($data[$key]) || \array_key_exists($key, $data))) {
                         if (!\is_array($data[$paramName])) {
@@ -388,7 +391,7 @@ abstract class AbstractNormalizer implements NormalizerInterface, DenormalizerIn
                         sprintf('Failed to create object because the class misses the "%s" property.', $constructorParameter->name),
                         $data,
                         ['unknown'],
-                        $context['deserialization_path'] ?? null,
+                        $subContext['deserialization_path'],
                         true
                     );
                     $context['not_normalizable_value_exceptions'][] = $exception;
