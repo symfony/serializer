@@ -9,17 +9,17 @@
  * file that was distributed with this source code.
  */
 
-namespace Symfony\Component\Serializer\Tests\Fixtures;
+namespace Symfony\Component\Serializer\Tests\Fixtures\Annotations;
 
 use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
- * @author Samuel Roze <samuel.roze@gmail.com>
+ * @author Kévin Dunglas <dunglas@gmail.com>
  */
-class DummyMessageNumberOne implements DummyMessageInterface
+interface GroupDummyInterface
 {
-    public $one;
-
-    #[Groups(['two'])]
-    public $two;
+    /**
+     * @Groups({"a", "name_converter"})
+     */
+    public function getSymfony();
 }
