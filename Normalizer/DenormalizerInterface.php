@@ -22,7 +22,7 @@ use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  *
- * @method getSupportedTypes(?string $format): array
+ * @method getSupportedTypes(?string $format): array<string|class-string, bool>
  */
 interface DenormalizerInterface
 {
