@@ -62,6 +62,12 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
     public const SKIP_NULL_VALUES = 'skip_null_values';
 
     /**
+     * Flag to control whether fields with the value `[]` should be output
+     * when normalizing or omitted.
+     */
+    public const SKIP_EMPTY_ARRAY_VALUES = 'skip_empty_array_values';
+
+    /**
      * Flag to control whether uninitialized PHP>=7.4 typed class properties
      * should be excluded when normalizing.
      */
@@ -653,6 +659,10 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
         if (null === $attributeValue && ($context[self::SKIP_NULL_VALUES] ?? $this->defaultContext[self::SKIP_NULL_VALUES] ?? false)) {
             return $data;
         }
+
+		if (is_array($attributeValue) && count($attributeValue) === 0 && ($context[self::SKIP_EMPTY_ARRAY_VALUES] ?? $this->defaultContext[self::SKIP_EMPTY_ARRAY_VALUES] ?? false)) {
+			return $data;
+		}
 
         if (null !== $classMetadata && null !== $serializedPath = ($attributesMetadata[$attribute] ?? null)?->getSerializedPath()) {
             $propertyAccessor = PropertyAccess::createPropertyAccessor();
