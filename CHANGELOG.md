@@ -6,6 +6,7 @@ CHANGELOG
 
  * Improve `NotNormalizableValueException` exception messages in `BackedEnumNormalizer` to contain more useful information
  * Trigger a deprecation when a date could not be parsed using the default format
+ * Add `AbstractObjectNormalizer::ENABLE_TYPE_CONVERSION` for scalar type transformation
 
 8.0
 ---
