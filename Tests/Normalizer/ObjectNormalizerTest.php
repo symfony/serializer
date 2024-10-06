@@ -12,7 +12,6 @@
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccessorBuilder;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -49,6 +48,7 @@ use Symfony\Component\Serializer\Tests\Fixtures\Php74Dummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Php74DummyPrivate;
 use Symfony\Component\Serializer\Tests\Fixtures\Php80Dummy;
 use Symfony\Component\Serializer\Tests\Fixtures\SiblingHolder;
+use Symfony\Component\Serializer\Tests\Fixtures\StdClassNormalizer;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\AttributesTestTrait;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\CacheableObjectAttributesTestTrait;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\CallbacksTestTrait;
@@ -86,7 +86,7 @@ class ObjectNormalizerTest extends TestCase
     use TypeEnforcementTestTrait;
 
     private ObjectNormalizer $normalizer;
-    private SerializerInterface&NormalizerInterface&MockObject $serializer;
+    private SerializerInterface&NormalizerInterface $serializer;
 
     protected function setUp(): void
     {
@@ -95,8 +95,8 @@ class ObjectNormalizerTest extends TestCase
 
     private function createNormalizer(array $defaultContext = [], ?ClassMetadataFactoryInterface $classMetadataFactory = null): void
     {
-        $this->serializer = $this->createMock(ObjectSerializerNormalizer::class);
         $this->normalizer = new ObjectNormalizer($classMetadataFactory, null, null, null, null, null, $defaultContext);
+        $this->serializer = new Serializer([new StdClassNormalizer(), $this->normalizer]);
         $this->normalizer->setSerializer($this->serializer);
     }
 
@@ -111,13 +111,6 @@ class ObjectNormalizerTest extends TestCase
         $obj->setObject($object);
         $obj->setGo(true);
 
-        $this->serializer
-            ->expects($this->once())
-            ->method('normalize')
-            ->with($object, 'any')
-            ->willReturn('string_object')
-        ;
-
         $this->assertEquals(
             [
                 'foo' => 'foo',
@@ -126,6 +119,32 @@ class ObjectNormalizerTest extends TestCase
                 'fooBar' => 'foobar',
                 'camelCase' => 'camelcase',
                 'object' => 'string_object',
+                'go' => true,
+            ],
+            $this->normalizer->normalize($obj, 'any')
+        );
+    }
+
+    public function testNormalizeWithoutSerializer()
+    {
+        $obj = new ObjectDummy();
+        $obj->setFoo('foo');
+        $obj->bar = 'bar';
+        $obj->setBaz(true);
+        $obj->setCamelCase('camelcase');
+        $obj->setObject(null);
+        $obj->setGo(true);
+
+        $this->normalizer = new ObjectNormalizer();
+
+        $this->assertEquals(
+            [
+                'foo' => 'foo',
+                'bar' => 'bar',
+                'baz' => true,
+                'fooBar' => 'foobar',
+                'camelCase' => 'camelcase',
+                'object' => null,
                 'go' => true,
             ],
             $this->normalizer->normalize($obj, 'any')
@@ -962,7 +981,7 @@ class ObjectNormalizerTest extends TestCase
 
     protected function getNormalizerForAccessors($accessorPrefixes = null): ObjectNormalizer
     {
-        $accessorPrefixes = $accessorPrefixes ?? ReflectionExtractor::$defaultAccessorPrefixes;
+        $accessorPrefixes ??= ReflectionExtractor::$defaultAccessorPrefixes;
         $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
         $propertyAccessorBuilder = (new PropertyAccessorBuilder())
             ->setReadInfoExtractor(
