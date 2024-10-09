@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\Serializer\Tests\Mapping\Factory;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Mapping\AttributeMetadata;
 use Symfony\Component\Serializer\Mapping\ClassMetadata;
@@ -21,9 +23,9 @@ use Symfony\Component\Serializer\Tests\Fixtures\Dummy;
 
 /**
  * @author Fabien Bourigault <bourigaultfabien@gmail.com>
- *
- * @group legacy
  */
+#[IgnoreDeprecations]
+#[Group('legacy')]
 final class CompiledClassMetadataFactoryTest extends TestCase
 {
     public function testItImplementsClassMetadataFactoryInterface()
