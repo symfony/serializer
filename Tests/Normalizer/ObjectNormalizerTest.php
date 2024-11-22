@@ -760,7 +760,7 @@ class ObjectNormalizerTest extends TestCase
             'inner' => ['foo' => 'foo', 'bar' => 'bar'],
             'date' => '1988/01/21',
             'inners' => [['foo' => 1], ['foo' => 2]],
-        ], ObjectOuter::class);
+        ], ObjectOuter::class, null, ['datetime_format' => 'Y/m/d']);
 
         $this->assertSame('foo', $obj->getInner()->foo);
         $this->assertSame('bar', $obj->getInner()->bar);
