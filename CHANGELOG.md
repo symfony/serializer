@@ -13,6 +13,7 @@ CHANGELOG
  * Deprecate class aliases in the `Annotation` namespace, use attributes instead
  * Deprecate getters in attribute classes in favor of public properties
  * Deprecate `ClassMetadataFactoryCompiler`
+ * Add `FORCE_TIMEZONE_KEY` to `DateTimeNormalizer` to force the timezone during denormalization
 
 7.3
 ---
