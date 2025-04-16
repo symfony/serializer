@@ -326,6 +326,10 @@
           "type": "boolean",
           "description": "Whether to ignore empty attributes (XmlEncoder)"
         },
+        "preserve_numeric_keys": {
+          "type": "boolean",
+          "description": "Whether to preserve numeric keys in array (XmlEncoder)"
+        },
         "inline_threshold": {
           "type": "integer",
           "description": "Threshold to switch to inline YAML (YamlEncoder)"
