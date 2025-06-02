@@ -17,7 +17,6 @@ use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyDocBlockExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
-use Symfony\Component\PropertyInfo\Type as LegacyType;
 use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Attribute\DiscriminatorMap;
 use Symfony\Component\Serializer\Attribute\SerializedName;
@@ -437,20 +436,7 @@ class AbstractObjectNormalizerTest extends TestCase
     private function getDenormalizerForDummyCollection()
     {
         $extractor = $this->createMock(PhpDocExtractor::class);
-
-        if (method_exists(PhpDocExtractor::class, 'getType')) {
-            $extractor->method('getType')
-                ->willReturn(
-                    Type::list(Type::object(DummyChild::class)),
-                    null,
-                );
-        } else {
-            $extractor->method('getTypes')
-                ->willReturn(
-                    [new LegacyType('array', false, null, true, new LegacyType('int'), new LegacyType('object', false, DummyChild::class))],
-                    null
-                );
-        }
+        $extractor->method('getType')->willReturn(Type::list(Type::object(DummyChild::class)), null);
 
         $denormalizer = new AbstractObjectNormalizerCollectionDummy(null, null, $extractor);
         $arrayDenormalizer = new ArrayDenormalizerDummy();
@@ -501,20 +487,7 @@ class AbstractObjectNormalizerTest extends TestCase
     private function getDenormalizerForStringCollection()
     {
         $extractor = $this->createMock(PhpDocExtractor::class);
-
-        if (method_exists(PhpDocExtractor::class, 'getType')) {
-            $extractor->method('getType')
-                ->willReturn(
-                    Type::list(Type::string()),
-                    null,
-                );
-        } else {
-            $extractor->method('getTypes')
-                ->willReturn(
-                    [new LegacyType('array', false, null, true, new LegacyType('int'), new LegacyType('string'))],
-                    null
-                );
-        }
+        $extractor->method('getType')->willReturn(Type::list(Type::string()), null);
 
         $denormalizer = new AbstractObjectNormalizerCollectionDummy(null, null, $extractor);
         $arrayDenormalizer = new ArrayDenormalizerDummy();
@@ -732,40 +705,21 @@ class AbstractObjectNormalizerTest extends TestCase
     private function getDenormalizerForObjectWithBasicProperties()
     {
         $extractor = $this->createMock(PhpDocExtractor::class);
-
-        if (method_exists(PhpDocExtractor::class, 'getType')) {
-            $extractor->method('getType')
-                ->willReturn(
-                    Type::bool(),
-                    Type::bool(),
-                    Type::bool(),
-                    Type::bool(),
-                    Type::int(),
-                    Type::int(),
-                    Type::float(),
-                    Type::float(),
-                    Type::float(),
-                    Type::float(),
-                    Type::float(),
-                    Type::float(),
-                );
-        } else {
-            $extractor->method('getTypes')
-                ->willReturn(
-                    [new LegacyType('bool')],
-                    [new LegacyType('bool')],
-                    [new LegacyType('bool')],
-                    [new LegacyType('bool')],
-                    [new LegacyType('int')],
-                    [new LegacyType('int')],
-                    [new LegacyType('float')],
-                    [new LegacyType('float')],
-                    [new LegacyType('float')],
-                    [new LegacyType('float')],
-                    [new LegacyType('float')],
-                    [new LegacyType('float')]
-                );
-        }
+        $extractor->method('getType')
+            ->willReturn(
+                Type::bool(),
+                Type::bool(),
+                Type::bool(),
+                Type::bool(),
+                Type::int(),
+                Type::int(),
+                Type::float(),
+                Type::float(),
+                Type::float(),
+                Type::float(),
+                Type::float(),
+                Type::float(),
+            );
 
         $denormalizer = new AbstractObjectNormalizerCollectionDummy(null, null, $extractor);
         $arrayDenormalizer = new ArrayDenormalizerDummy();
