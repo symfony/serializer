@@ -52,7 +52,6 @@ class NumberNormalizerTest extends TestCase
     }
 
     /**
-     * @requires PHP 8.4
      * @requires extension bcmath
      *
      * @dataProvider normalizeGoodBcMathNumberValueProvider
@@ -108,7 +107,6 @@ class NumberNormalizerTest extends TestCase
     }
 
     /**
-     * @requires PHP 8.4
      * @requires extension bcmath
      */
     public function testSupportsBcMathNumberDenormalization()
@@ -130,7 +128,6 @@ class NumberNormalizerTest extends TestCase
     }
 
     /**
-     * @requires PHP 8.4
      * @requires extension bcmath
      *
      * @dataProvider denormalizeGoodBcMathNumberValueProvider
@@ -168,7 +165,6 @@ class NumberNormalizerTest extends TestCase
     }
 
     /**
-     * @requires PHP 8.4
      * @requires extension bcmath
      *
      * @dataProvider denormalizeBadBcMathNumberValueProvider
