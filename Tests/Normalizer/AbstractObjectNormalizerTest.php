@@ -44,6 +44,7 @@ use Symfony\Component\Serializer\Normalizer\CustomNormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerAwareInterface;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -51,6 +52,8 @@ use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummyFirstChild;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummySecondChild;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyFirstChildQuux;
+use Symfony\Component\Serializer\Tests\Fixtures\DummyMessageInterface;
+use Symfony\Component\Serializer\Tests\Fixtures\DummyMessageNumberFour;
 use Symfony\Component\Serializer\Tests\Fixtures\DummySecondChildQuux;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyString;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyWithNotNormalizable;
@@ -1187,6 +1190,25 @@ class AbstractObjectNormalizerTest extends TestCase
             [['foo' => true], FalsePropertyDummy::class],
             [['foo' => false], TruePropertyDummy::class],
         ];
+    }
+
+    public function testDeserializeAndSerializeConstructorAndIgnoreAndInterfacedObjectsWithTheClassMetadataDiscriminator()
+    {
+        $example = new DummyMessageNumberFour('Hello');
+
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+
+        $normalizer = new PropertyNormalizer(
+            $classMetadataFactory,
+            null,
+            new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()]),
+            new ClassDiscriminatorFromClassMetadata($classMetadataFactory),
+        );
+
+        $serialized = $normalizer->normalize($example, 'json');
+        $deserialized = $normalizer->denormalize($serialized, DummyMessageInterface::class, 'json');
+
+        $this->assertEquals($example, $deserialized);
     }
 
     /**
