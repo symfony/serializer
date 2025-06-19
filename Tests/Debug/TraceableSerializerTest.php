@@ -128,6 +128,40 @@ class TraceableSerializerTest extends TestCase
         $traceableSerializer->encode('data', 'format');
         $traceableSerializer->decode('data', 'format');
     }
+
+    public function testCollectedCaller()
+    {
+        $serializer = new \Symfony\Component\Serializer\Serializer();
+
+        $collector = new SerializerDataCollector();
+        $traceableSerializer = new TraceableSerializer($serializer, $collector);
+
+        $traceableSerializer->normalize('data');
+        $collector->lateCollect();
+
+        $this->assertSame([
+            'name' => 'TraceableSerializerTest.php',
+            'file' => __FILE__,
+            'line' => __LINE__ - 6,
+        ], $collector->getData()['normalize'][0]['caller']);
+    }
+
+    public function testCollectedCallerFromArrayMap()
+    {
+        $serializer = new \Symfony\Component\Serializer\Serializer();
+
+        $collector = new SerializerDataCollector();
+        $traceableSerializer = new TraceableSerializer($serializer, $collector);
+
+        array_map([$traceableSerializer, 'normalize'], ['data']);
+        $collector->lateCollect();
+
+        $this->assertSame([
+            'name' => 'TraceableSerializerTest.php',
+            'file' => __FILE__,
+            'line' => __LINE__ - 6,
+        ], $collector->getData()['normalize'][0]['caller']);
+    }
 }
 
 class Serializer implements SerializerInterface, NormalizerInterface, DenormalizerInterface, EncoderInterface, DecoderInterface
