@@ -28,9 +28,9 @@ use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
 use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Serializer\Mapping\Loader\YamlFileLoader;
-use Symfony\Component\Serializer\NameConverter\AdvancedNameConverterInterface;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Serializer\NameConverter\MetadataAwareNameConverter;
+use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
@@ -779,9 +779,9 @@ class ObjectNormalizerTest extends TestCase
         $this->assertFalse($object->canBeFalseOrString);
     }
 
-    public function testAdvancedNameConverter()
+    public function testNameConverterProperties()
     {
-        $nameConverter = new class implements AdvancedNameConverterInterface {
+        $nameConverter = new class implements NameConverterInterface {
             public function normalize(string $propertyName, ?string $class = null, ?string $format = null, array $context = []): string
             {
                 return \sprintf('%s-%s-%s-%s', $propertyName, $class, $format, $context['foo']);
