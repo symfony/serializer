@@ -21,6 +21,7 @@ CHANGELOG
    public function denormalize(string $propertyName, ?string $class = null, ?string $format = null, array $context = []): string;
    ```
  * Remove `AdvancedNameConverterInterface`, use `NameConverterInterface` instead
+ * Remove the `CompiledClassMetadataFactory` and `CompiledClassMetadataCacheWarmer` classes
 
 7.3
 ---
