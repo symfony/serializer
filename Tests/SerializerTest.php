@@ -1677,6 +1677,54 @@ class SerializerTest extends TestCase
 
         $serializer->denormalize($data, DummyWithVariadicParameter::class);
     }
+
+    public function testDenormalizationFailsWithMultipleErrorsInDefaultContext()
+    {
+        $serializer = new Serializer(
+            [new DateTimeNormalizer(), new ObjectNormalizer()],
+            [],
+            [DenormalizerInterface::COLLECT_DENORMALIZATION_ERRORS => true]
+        );
+
+        $data = ['date' => '', 'unknown' => null];
+
+        try {
+            $serializer->denormalize($data, DummyEntityWithStringAndDateTime::class);
+            $this->fail('Expected PartialDenormalizationException was not thrown');
+        } catch (PartialDenormalizationException $e) {
+            $this->assertIsArray($e->getErrors());
+            $this->assertCount(2, $e->getErrors(), 'Expected two denormalization errors');
+
+            $exceptionsAsArray = array_map(function (NotNormalizableValueException $ex): array {
+                return [
+                    'currentType' => $ex->getCurrentType(),
+                    'expectedTypes' => $ex->getExpectedTypes(),
+                    'path' => $ex->getPath(),
+                    'useMessageForUser' => $ex->canUseMessageForUser(),
+                    'message' => $ex->getMessage(),
+                ];
+            }, $e->getErrors());
+
+            $expected = [
+                [
+                    'currentType' => 'null',
+                    'expectedTypes' => ['string'],
+                    'path' => 'bar',
+                    'useMessageForUser' => true,
+                    'message' => 'Failed to create object because the class misses the "bar" property.',
+                ],
+                [
+                    'currentType' => 'string',
+                    'expectedTypes' => ['string'],
+                    'path' => 'date',
+                    'useMessageForUser' => true,
+                    'message' => 'The data is either not an string, an empty string, or null; you should pass a string that can be parsed with the passed format or a valid DateTime string.',
+                ],
+            ];
+
+            $this->assertSame($expected, $exceptionsAsArray);
+        }
+    }
 }
 
 class Model
@@ -1740,6 +1788,15 @@ class Bar
     public function __construct($value)
     {
         $this->value = $value;
+    }
+}
+
+class DummyEntityWithStringAndDateTime
+{
+    public function __construct(
+        public string $bar,
+        public \DateTimeInterface $date,
+    ) {
     }
 }
 
