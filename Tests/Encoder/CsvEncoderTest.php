@@ -732,25 +732,4 @@ CSV;
         yield 'generator' => [(fn (): \Generator => yield from $data)()];
     }
 
-    /**
-     * @group legacy
-     */
-    public function testPassingNonEmptyEscapeCharIsDeprecated()
-    {
-        $this->expectUserDeprecationMessage('Since symfony/serializer 7.2: Setting the "csv_escape_char" option is deprecated. The option will be removed in 8.0.');
-        $encoder = new CsvEncoder(['csv_escape_char' => '@']);
-
-        $this->assertSame(
-            [[
-                'A, B@"' => 'D',
-                'C' => 'E',
-            ]],
-            $encoder->decode(<<<'CSV'
-                "A, B@"", "C"
-                "D", "E"
-                CSV,
-                'csv'
-            )
-        );
-    }
 }
