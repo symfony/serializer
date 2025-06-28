@@ -4,6 +4,8 @@ CHANGELOG
 8.0
 ---
 
+ * Remove `CsvEncoder::ESCAPE_CHAR_KEY` constant and escape character functionality
+ * Remove `CsvEncoderContextBuilder::withEscapeChar()` method
  * Remove `AbstractNormalizerContextBuilder::withDefaultContructorArguments()`, use `withDefaultConstructorArguments()` instead
  * Change signature of `NameConverterInterface::normalize()` and `NameConverterInterface::denormalize()` methods:
 
