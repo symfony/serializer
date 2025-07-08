@@ -41,8 +41,8 @@ interface NormalizerInterface
     /**
      * Checks whether the given class is supported for normalization by this normalizer.
      *
-     * @param mixed                $data   Data to normalize
-     * @param string|null          $format The format being (de-)serialized from or into
+     * @param mixed                $data    Data to normalize
+     * @param string|null          $format  The format being (de-)serialized from or into
      * @param array<string, mixed> $context Context options for the normalizer
      */
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool;
