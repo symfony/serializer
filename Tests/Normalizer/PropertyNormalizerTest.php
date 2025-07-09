@@ -30,10 +30,12 @@ use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\GroupDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\GroupDummyChild;
+use Symfony\Component\Serializer\Tests\Fixtures\ChildClassDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Dummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Php74Dummy;
 use Symfony\Component\Serializer\Tests\Fixtures\PropertyCircularReferenceDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\PropertySiblingHolder;
+use Symfony\Component\Serializer\Tests\Fixtures\SpecialBookDummy;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\CacheableObjectAttributesTestTrait;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\CallbacksTestTrait;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\CircularReferenceTestTrait;
@@ -174,6 +176,39 @@ class PropertyNormalizerTest extends TestCase
         );
         $this->assertEquals('foo', $obj->foo);
         $this->assertEquals('bar', $obj->getBar());
+    }
+
+    /**
+     * @requires PHP 8.2
+     */
+    public function testDenormalizeWithReadOnlyClass()
+    {
+        /** @var ChildClassDummy $object */
+        $object = $this->normalizer->denormalize(
+            ['parentProp' => 'parentProp', 'childProp' => 'childProp'],
+            ChildClassDummy::class,
+            'any'
+        );
+
+        $this->assertSame('parentProp', $object->getParentProp());
+        $this->assertSame('childProp', $object->childProp);
+    }
+
+    /**
+     * @requires PHP 8.4
+     */
+    public function testDenormalizeWithAsymmetricPropertyVisibility()
+    {
+        /** @var SpecialBookDummy $object */
+        $object = $this->normalizer->denormalize(
+            ['title' => 'life', 'author' => 'Santiago San Martin', 'pubYear' => 2000],
+            SpecialBookDummy::class,
+            'any'
+        );
+
+        $this->assertSame('life', $object->title);
+        $this->assertSame('Santiago San Martin', $object->author);
+        $this->assertSame(2000, $object->getPubYear());
     }
 
     public function testNormalizeWithParentClass()
