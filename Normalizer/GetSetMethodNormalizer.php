@@ -121,7 +121,7 @@ class GetSetMethodNormalizer extends AbstractObjectNormalizer
             && 3 < \strlen($method->name)
             && str_starts_with($method->name, 'set')
             && !ctype_lower($method->name[3])
-            ;
+        ;
     }
 
     protected function extractAttributes(object $object, ?string $format = null, array $context = []): array
@@ -188,7 +188,7 @@ class GetSetMethodNormalizer extends AbstractObjectNormalizer
             return false;
         }
 
-        $class = \is_object($classOrObject) ? \get_class($classOrObject) : $classOrObject;
+        $class = \is_object($classOrObject) ? $classOrObject::class : $classOrObject;
 
         if (!isset(self::$reflectionCache[$class])) {
             self::$reflectionCache[$class] = new \ReflectionClass($class);

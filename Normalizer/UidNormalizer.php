@@ -58,7 +58,7 @@ final class UidNormalizer implements NormalizerInterface, DenormalizerInterface,
             self::NORMALIZATION_FORMAT_BASE58 => $object->toBase58(),
             self::NORMALIZATION_FORMAT_BASE32 => $object->toBase32(),
             self::NORMALIZATION_FORMAT_RFC4122 => $object->toRfc4122(),
-            default => throw new LogicException(sprintf('The "%s" format is not valid.', $context[self::NORMALIZATION_FORMAT_KEY] ?? $this->defaultContext[self::NORMALIZATION_FORMAT_KEY])),
+            default => throw new LogicException(\sprintf('The "%s" format is not valid.', $context[self::NORMALIZATION_FORMAT_KEY] ?? $this->defaultContext[self::NORMALIZATION_FORMAT_KEY])),
         };
     }
 
@@ -78,7 +78,7 @@ final class UidNormalizer implements NormalizerInterface, DenormalizerInterface,
 
             return $type::fromString($data);
         } catch (\InvalidArgumentException|\TypeError) {
-            throw NotNormalizableValueException::createForUnexpectedDataType(sprintf('The data is not a valid "%s" string representation.', $type), $data, [Type::BUILTIN_TYPE_STRING], $context['deserialization_path'] ?? null, true);
+            throw NotNormalizableValueException::createForUnexpectedDataType(\sprintf('The data is not a valid "%s" string representation.', $type), $data, [Type::BUILTIN_TYPE_STRING], $context['deserialization_path'] ?? null, true);
         } catch (\Error $e) { // @deprecated remove this catch block in 7.0
             if (str_starts_with($e->getMessage(), 'Cannot instantiate abstract class')) {
                 return $this->denormalize($data, AbstractUid::class, $format, $context);

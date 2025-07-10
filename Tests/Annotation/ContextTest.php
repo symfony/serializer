@@ -40,7 +40,7 @@ class ContextTest extends TestCase
     public function testInvalidGroupOption()
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(sprintf('Parameter "groups" given to "%s" must be a string or an array of strings, "stdClass" given', Context::class));
+        $this->expectExceptionMessage(\sprintf('Parameter "groups" given to "%s" must be a string or an array of strings, "stdClass" given', Context::class));
 
         new Context(context: ['foo' => 'bar'], groups: ['fine', new \stdClass()]);
     }
@@ -86,7 +86,7 @@ Symfony\Component\Serializer\Attribute\Context {
   -normalizationContext: []
   -denormalizationContext: []
 }
-DUMP
+DUMP,
         ];
 
         yield 'named arguments: with normalization context option' => [
@@ -100,7 +100,7 @@ Symfony\Component\Serializer\Attribute\Context {
   ]
   -denormalizationContext: []
 }
-DUMP
+DUMP,
         ];
 
         yield 'named arguments: with denormalization context option' => [
@@ -114,7 +114,7 @@ Symfony\Component\Serializer\Attribute\Context {
     "foo" => "bar",
   ]
 }
-DUMP
+DUMP,
         ];
 
         yield 'named arguments: with groups option as string' => [
@@ -130,7 +130,7 @@ Symfony\Component\Serializer\Attribute\Context {
   -normalizationContext: []
   -denormalizationContext: []
 }
-DUMP
+DUMP,
         ];
 
         yield 'named arguments: with groups option as array' => [
@@ -147,7 +147,7 @@ Symfony\Component\Serializer\Attribute\Context {
   -normalizationContext: []
   -denormalizationContext: []
 }
-DUMP
+DUMP,
         ];
     }
 }

@@ -72,10 +72,10 @@ class DataUriNormalizer implements NormalizerInterface, DenormalizerInterface, C
         }
 
         if ('text' === explode('/', $mimeType, 2)[0]) {
-            return sprintf('data:%s,%s', $mimeType, rawurlencode($data));
+            return \sprintf('data:%s,%s', $mimeType, rawurlencode($data));
         }
 
-        return sprintf('data:%s;base64,%s', $mimeType, base64_encode($data));
+        return \sprintf('data:%s;base64,%s', $mimeType, base64_encode($data));
     }
 
     /**
@@ -104,7 +104,7 @@ class DataUriNormalizer implements NormalizerInterface, DenormalizerInterface, C
             switch ($type) {
                 case File::class:
                     if (!class_exists(File::class)) {
-                        throw new InvalidArgumentException(sprintf('Cannot denormalize to a "%s" without the HttpFoundation component installed. Try running "composer require symfony/http-foundation".', File::class));
+                        throw new InvalidArgumentException(\sprintf('Cannot denormalize to a "%s" without the HttpFoundation component installed. Try running "composer require symfony/http-foundation".', File::class));
                     }
 
                     return new File($data, false);
@@ -117,7 +117,7 @@ class DataUriNormalizer implements NormalizerInterface, DenormalizerInterface, C
             throw NotNormalizableValueException::createForUnexpectedDataType($exception->getMessage(), $data, ['string'], $context['deserialization_path'] ?? null, false, $exception->getCode(), $exception);
         }
 
-        throw new InvalidArgumentException(sprintf('The class parameter "%s" is not supported. It must be one of "SplFileInfo", "SplFileObject" or "Symfony\Component\HttpFoundation\File\File".', $type));
+        throw new InvalidArgumentException(\sprintf('The class parameter "%s" is not supported. It must be one of "SplFileInfo", "SplFileObject" or "Symfony\Component\HttpFoundation\File\File".', $type));
     }
 
     /**

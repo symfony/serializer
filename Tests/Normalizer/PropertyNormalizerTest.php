@@ -465,19 +465,19 @@ class PropertyNormalizerTest extends TestCase
     {
         $normalizer = $this->getDenormalizerForTypeEnforcement();
         $root = $normalizer->denormalize([
-                'children' => [[
-                    ['foo' => 'one', 'bar' => 'two'],
-                    ['foo' => 'three', 'bar' => 'four'],
-                ]],
-                'grandChildren' => [[[
-                    ['foo' => 'five', 'bar' => 'six'],
-                    ['foo' => 'seven', 'bar' => 'eight'],
-                ]]],
-                'intMatrix' => [
-                    [0, 1, 2],
-                    [3, 4, 5],
-                ],
+            'children' => [[
+                ['foo' => 'one', 'bar' => 'two'],
+                ['foo' => 'three', 'bar' => 'four'],
+            ]],
+            'grandChildren' => [[[
+                ['foo' => 'five', 'bar' => 'six'],
+                ['foo' => 'seven', 'bar' => 'eight'],
+            ]]],
+            'intMatrix' => [
+                [0, 1, 2],
+                [3, 4, 5],
             ],
+        ],
             RootDummy::class,
             'any'
         );

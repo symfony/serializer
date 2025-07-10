@@ -30,7 +30,7 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
     public function getSupportedTypes(?string $format): array
     {
         return [
-           \BackedEnum::class => true,
+            \BackedEnum::class => true,
         ];
     }
 

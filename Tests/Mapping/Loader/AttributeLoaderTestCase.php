@@ -154,7 +154,7 @@ abstract class AttributeLoaderTestCase extends TestCase
         $class = $this->getNamespace().'\BadMethodContextDummy';
 
         $this->expectException(MappingException::class);
-        $this->expectExceptionMessage(sprintf('Context on "%s::badMethod()" cannot be added', $class));
+        $this->expectExceptionMessage(\sprintf('Context on "%s::badMethod()" cannot be added', $class));
 
         $loader = $this->getLoaderForContextMapping();
 

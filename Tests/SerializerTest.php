@@ -408,7 +408,7 @@ class SerializerTest extends TestCase
         $example = new AbstractDummyFirstChild('foo-value', 'bar-value');
         $example->setQuux(new DummyFirstChildQuux('quux'));
 
-        $loaderMock = new class() implements ClassMetadataFactoryInterface {
+        $loaderMock = new class implements ClassMetadataFactoryInterface {
             public function getMetadataFor($value): ClassMetadataInterface
             {
                 if (AbstractDummy::class === $value) {
@@ -589,10 +589,10 @@ class SerializerTest extends TestCase
         $data['c2'] = new \ArrayObject(['nested' => new \ArrayObject(['k' => 'v'])]);
         $data['d1'] = new \ArrayObject(['nested' => []]);
         $data['d2'] = new \ArrayObject(['nested' => ['k' => 'v']]);
-        $data['e1'] = new class() {
+        $data['e1'] = new class {
             public $map = [];
         };
-        $data['e2'] = new class() {
+        $data['e2'] = new class {
             public $map = ['k' => 'v'];
         };
         $data['f1'] = new class(new \ArrayObject()) {
@@ -1192,7 +1192,7 @@ class SerializerTest extends TestCase
                 'useMessageForUser' => false,
                 'message' => 'The type of the "string" attribute for class "Symfony\\Component\\Serializer\\Tests\\Fixtures\\Php74Full" must be one of "string" ("null" given).',
             ],
-            ];
+        ];
 
         $this->assertSame($expected, $exceptionsAsArray);
     }
@@ -1442,8 +1442,8 @@ class SerializerTest extends TestCase
 
         try {
             $serializer->deserialize('{"get": "POST"}', DummyObjectWithEnumProperty::class, 'json', [
-                 DenormalizerInterface::COLLECT_DENORMALIZATION_ERRORS => true,
-             ]);
+                DenormalizerInterface::COLLECT_DENORMALIZATION_ERRORS => true,
+            ]);
         } catch (\Throwable $e) {
             $this->assertInstanceOf(PartialDenormalizationException::class, $e);
         }
