@@ -955,6 +955,20 @@ class ObjectNormalizerTest extends TestCase
             123 => 321,
         ], $normalized);
     }
+
+    public function testNormalizeObjectWithBooleanPropertyAndIsserMethodWithSameName()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $normalizer = new ObjectNormalizer($classMetadataFactory);
+
+        $object = new ObjectWithBooleanPropertyAndIsserWithSameName();
+        $normalized = $normalizer->normalize($object);
+
+        $this->assertSame([
+            'foo' => 'foo',
+            'isFoo' => true,
+        ], $normalized);
+    }
 }
 
 class ProxyObjectDummy extends ObjectDummy
@@ -1295,5 +1309,21 @@ class ObjectWithAccessorishMethods
     public function isolate()
     {
         $this->accessorishCalled = true;
+    }
+}
+
+class ObjectWithBooleanPropertyAndIsserWithSameName
+{
+    private $foo = 'foo';
+    private $isFoo = true;
+
+    public function getFoo()
+    {
+        return $this->foo;
+    }
+
+    public function isFoo()
+    {
+        return $this->isFoo;
     }
 }
