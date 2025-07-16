@@ -25,6 +25,11 @@ CHANGELOG
  * Remove `AdvancedNameConverterInterface`, use `NameConverterInterface` instead
  * Remove the `CompiledClassMetadataFactory` and `CompiledClassMetadataCacheWarmer` classes
 
+7.4
+---
+
+ * Add support for `can*()` methods to `AttributeLoader`
+
 7.3
 ---
 

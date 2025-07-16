@@ -114,7 +114,7 @@ class AttributeLoader implements LoaderInterface
                 continue; /*  matches the BC behavior in `Symfony\Component\Serializer\Normalizer\ObjectNormalizer::extractAttributes` */
             }
 
-            $accessorOrMutator = preg_match('/^(get|is|has|set)(.+)$/i', $method->name, $matches);
+            $accessorOrMutator = preg_match('/^(get|is|has|set|can)(.+)$/i', $method->name, $matches);
             if ($accessorOrMutator && !ctype_lower($matches[2][0])) {
                 $attributeName = lcfirst($matches[2]);
 

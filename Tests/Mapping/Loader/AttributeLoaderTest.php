@@ -153,6 +153,7 @@ class AttributeLoaderTest extends TestCase
         $attributesMetadata = $classMetadata->getAttributesMetadata();
         $this->assertTrue($attributesMetadata['ignored1']->isIgnored());
         $this->assertTrue($attributesMetadata['ignored2']->isIgnored());
+        $this->assertTrue($attributesMetadata['beIgnored']->isIgnored());
     }
 
     public function testLoadContextsPropertiesPromoted()
