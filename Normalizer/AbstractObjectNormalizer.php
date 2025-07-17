@@ -428,13 +428,6 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
     {
         $expectedTypes = [];
 
-        // BC layer for type-info < 7.2
-        if (method_exists(Type::class, 'asNonNullable')) {
-            $isUnionType = $type->asNonNullable() instanceof UnionType;
-        } else {
-            $isUnionType = $type instanceof UnionType;
-        }
-
         $e = null;
         $extraAttributesException = null;
         $missingConstructorArgumentsException = null;
@@ -456,23 +449,14 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
                 $collectionValueType = $t->getCollectionValueType();
             }
 
-            // BC layer for type-info < 7.2
-            if (method_exists(Type::class, 'getBaseType')) {
-                $t = $t->getBaseType();
-            } else {
-                while ($t instanceof WrappingTypeInterface) {
-                    $t = $t->getWrappedType();
-                }
+            while ($t instanceof WrappingTypeInterface) {
+                $t = $t->getWrappedType();
             }
 
             // Fix a collection that contains the only one element
             // This is special to xml format only
-            if ('xml' === $format && $collectionValueType && (!\is_array($data) || !\is_int(key($data)))) {
-                // BC layer for type-info < 7.2
-                $isMixedType = method_exists(Type::class, 'isA') ? $collectionValueType->isA(TypeIdentifier::MIXED) : $collectionValueType->isIdentifiedBy(TypeIdentifier::MIXED);
-                if (!$isMixedType) {
-                    $data = [$data];
-                }
+            if ('xml' === $format && $collectionValueType && (!\is_array($data) || !\is_int(key($data))) && !$collectionValueType->isIdentifiedBy(TypeIdentifier::MIXED)) {
+                $data = [$data];
             }
 
             // This try-catch should cover all NotNormalizableValueException (and all return branches after the first
@@ -540,17 +524,10 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
                     }
                 }
 
-                if ($collectionValueType) {
+                if ($collectionValueBaseType = $collectionValueType) {
                     try {
-                        $collectionValueBaseType = $collectionValueType;
-
-                        // BC layer for type-info < 7.2
-                        if (!interface_exists(WrappingTypeInterface::class)) {
-                            $collectionValueBaseType = $collectionValueType->getBaseType();
-                        } else {
-                            while ($collectionValueBaseType instanceof WrappingTypeInterface) {
-                                $collectionValueBaseType = $collectionValueBaseType->getWrappedType();
-                            }
+                        while ($collectionValueBaseType instanceof WrappingTypeInterface) {
+                            $collectionValueBaseType = $collectionValueBaseType->getWrappedType();
                         }
                     } catch (TypeInfoLogicException) {
                         $collectionValueBaseType = Type::mixed();
@@ -561,11 +538,7 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
                         $class = $collectionValueBaseType->getClassName().'[]';
                         $context['key_type'] = $collectionKeyType;
                         $context['value_type'] = $collectionValueType;
-                    } elseif (
-                        // BC layer for type-info < 7.2
-                        !class_exists(NullableType::class) && TypeIdentifier::ARRAY === $collectionValueBaseType->getTypeIdentifier()
-                        || $collectionValueBaseType instanceof BuiltinType && TypeIdentifier::ARRAY === $collectionValueBaseType->getTypeIdentifier()
-                    ) {
+                    } elseif ($collectionValueBaseType instanceof BuiltinType && TypeIdentifier::ARRAY === $collectionValueBaseType->getTypeIdentifier()) {
                         // get inner type for any nested array
                         $innerType = $collectionValueType;
                         if ($innerType instanceof NullableType) {
@@ -695,15 +668,8 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
             throw $missingConstructorArgumentsException;
         }
 
-        // BC layer for type-info < 7.2
-        if (!class_exists(NullableType::class)) {
-            if (!$isUnionType && $e) {
-                throw $e;
-            }
-        } else {
-            if ($e && !($type instanceof UnionType && !$type instanceof NullableType)) {
-                throw $e;
-            }
+        if ($e && !($type instanceof UnionType && !$type instanceof NullableType)) {
+            throw $e;
         }
 
         if ($context[self::DISABLE_TYPE_ENFORCEMENT] ?? $this->defaultContext[self::DISABLE_TYPE_ENFORCEMENT] ?? false) {
