@@ -12,7 +12,6 @@
 namespace Symfony\Component\Serializer\Tests\Context\Encoder;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Bridge\PhpUnit\ExpectUserDeprecationMessageTrait;
 use Symfony\Component\Serializer\Context\Encoder\CsvEncoderContextBuilder;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
@@ -22,8 +21,6 @@ use Symfony\Component\Serializer\Exception\InvalidArgumentException;
  */
 class CsvEncoderContextBuilderTest extends TestCase
 {
-    use ExpectUserDeprecationMessageTrait;
-
     private CsvEncoderContextBuilder $contextBuilder;
 
     protected function setUp(): void
@@ -121,5 +118,4 @@ class CsvEncoderContextBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->contextBuilder->withEnclosure('ọ');
     }
-
 }

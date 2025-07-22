@@ -12,7 +12,6 @@
 namespace Symfony\Component\Serializer\Tests\Encoder;
 
 use PHPUnit\Framework\TestCase;
-use Symfony\Bridge\PhpUnit\ExpectUserDeprecationMessageTrait;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
 
@@ -21,8 +20,6 @@ use Symfony\Component\Serializer\Exception\UnexpectedValueException;
  */
 class CsvEncoderTest extends TestCase
 {
-    use ExpectUserDeprecationMessageTrait;
-
     private CsvEncoder $encoder;
 
     protected function setUp(): void
@@ -731,5 +728,4 @@ CSV;
         yield 'iterator aggregate' => [new \IteratorIterator(new \ArrayIterator($data))];
         yield 'generator' => [(fn (): \Generator => yield from $data)()];
     }
-
 }
