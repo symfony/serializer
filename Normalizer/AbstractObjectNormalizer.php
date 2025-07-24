@@ -710,7 +710,7 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
 
             // This try-catch should cover all NotNormalizableValueException (and all return branches after the first
             // exception) so we could try denormalizing all types of an union type. If the target type is not an union
-            // type, we will just re-throw the catched exception.
+            // type, we will just re-throw the caught exception.
             // In the case of no denormalization succeeds with an union type, it will fall back to the default exception
             // with the acceptable types list.
             try {

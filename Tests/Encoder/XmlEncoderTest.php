@@ -90,7 +90,7 @@ class XmlEncoderTest extends TestCase
                 '@bool-false' => false,
                 '@int' => 3,
                 '@float' => 3.4,
-                '@sring' => 'a',
+                '@string' => 'a',
             ],
         ];
 
@@ -104,7 +104,7 @@ class XmlEncoderTest extends TestCase
             '<Bar>2</Bar>'.
             '<Bar>3</Bar>'.
             '<a>b</a>'.
-            '<scalars bool-true="1" bool-false="0" int="3" float="3.4" sring="a"/>'.
+            '<scalars bool-true="1" bool-false="0" int="3" float="3.4" string="a"/>'.
             '</response>'."\n",
             $obj,
         ];
