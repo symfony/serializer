@@ -4,6 +4,7 @@ CHANGELOG
 7.4
 ---
 
+ * Add `CDATA_WRAPPING_NAME_PATTERN` support to `XmlEncoder`
  * Add support for `can*()` methods to `AttributeLoader`
 
 7.3
