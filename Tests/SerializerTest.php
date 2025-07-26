@@ -454,7 +454,7 @@ class SerializerTest extends TestCase
         $discriminatorResolver = new ClassDiscriminatorFromClassMetadata($loaderMock);
         $serializer = new Serializer([new ObjectNormalizer(null, null, null, new PhpDocExtractor(), $discriminatorResolver)], ['json' => new JsonEncoder()]);
 
-        $jsonData = '{"type":"first","quux":{"value":"quux"},"bar":"bar-value","foo":"foo-value"}';
+        $jsonData = '{"type":"first","quux":{"value":"quux"},"bar":"bar-value","baz":null,"foo":"foo-value"}';
 
         $deserialized = $serializer->deserialize($jsonData, AbstractDummy::class, 'json');
         $this->assertEquals($example, $deserialized);
