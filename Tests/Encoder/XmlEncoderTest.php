@@ -568,6 +568,23 @@ XML;
         $this->assertEquals(get_object_vars($obj), $this->encoder->decode($source, 'xml'));
     }
 
+    public function testCDataNamePattern()
+    {
+        $expected = <<<'XML'
+<?xml version="1.0"?>
+<response><person><firstname><![CDATA[Benjamin]]></firstname><lastname><![CDATA[Alexandre]]></lastname><other>data</other></person><person><firstname><![CDATA[Damien]]></firstname><lastname><![CDATA[Clay]]></lastname><other>data</other></person></response>
+
+XML;
+        $source = ['person' => [
+            ['firstname' => 'Benjamin', 'lastname' => 'Alexandre', 'other' => 'data'],
+            ['firstname' => 'Damien', 'lastname' => 'Clay', 'other' => 'data'],
+        ]];
+
+        $this->assertEquals($expected, $this->encoder->encode($source, 'xml', [
+            XmlEncoder::CDATA_WRAPPING_NAME_PATTERN => '/(firstname|lastname)/',
+        ]));
+    }
+
     public function testDecodeIgnoreWhiteSpace()
     {
         $source = <<<'XML'
