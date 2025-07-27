@@ -576,7 +576,7 @@ class AbstractObjectNormalizerTest extends TestCase
     /**
      * @return iterable<array{0: mixed, 1: bool}>
      */
-    public static function provideInvalidDiscriminatorTypes(): array
+    public static function provideInvalidDiscriminatorTypes(): iterable
     {
         $toStringObject = new class {
             public function __toString()
@@ -585,14 +585,12 @@ class AbstractObjectNormalizerTest extends TestCase
             }
         };
 
-        return [
-            [[], true],
-            [new \stdClass(), true],
-            [123, true],
-            [false, true],
-            ['first', false],
-            [$toStringObject, false],
-        ];
+        yield [[], true];
+        yield [new \stdClass(), true];
+        yield [123, true];
+        yield [false, true];
+        yield ['first', false];
+        yield [$toStringObject, false];
     }
 
     public function testDenormalizeWithDiscriminatorMapUsesCorrectClassname()
