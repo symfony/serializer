@@ -90,7 +90,7 @@ class XmlEncoderTest extends TestCase
                 '@bool-false' => false,
                 '@int' => 3,
                 '@float' => 3.4,
-                '@sring' => 'a',
+                '@string' => 'a',
             ],
         ];
 
@@ -104,7 +104,7 @@ class XmlEncoderTest extends TestCase
             '<Bar>2</Bar>'.
             '<Bar>3</Bar>'.
             '<a>b</a>'.
-            '<scalars bool-true="1" bool-false="0" int="3" float="3.4" sring="a"/>'.
+            '<scalars bool-true="1" bool-false="0" int="3" float="3.4" string="a"/>'.
             '</response>'."\n",
             $obj,
         ];
@@ -566,6 +566,23 @@ XML;
         $obj = $this->getObject();
 
         $this->assertEquals(get_object_vars($obj), $this->encoder->decode($source, 'xml'));
+    }
+
+    public function testCDataNamePattern()
+    {
+        $expected = <<<'XML'
+<?xml version="1.0"?>
+<response><person><firstname><![CDATA[Benjamin]]></firstname><lastname><![CDATA[Alexandre]]></lastname><other>data</other></person><person><firstname><![CDATA[Damien]]></firstname><lastname><![CDATA[Clay]]></lastname><other>data</other></person></response>
+
+XML;
+        $source = ['person' => [
+            ['firstname' => 'Benjamin', 'lastname' => 'Alexandre', 'other' => 'data'],
+            ['firstname' => 'Damien', 'lastname' => 'Clay', 'other' => 'data'],
+        ]];
+
+        $this->assertEquals($expected, $this->encoder->encode($source, 'xml', [
+            XmlEncoder::CDATA_WRAPPING_NAME_PATTERN => '/(firstname|lastname)/',
+        ]));
     }
 
     public function testDecodeIgnoreWhiteSpace()

@@ -500,6 +500,71 @@ class AbstractObjectNormalizerTest extends TestCase
         return $denormalizer;
     }
 
+    /**
+     * @dataProvider provideInvalidDiscriminatorTypes
+     */
+    public function testDenormalizeWithDiscriminatorMapHandlesInvalidTypeValue(mixed $typeValue, bool $shouldFail)
+    {
+        if ($shouldFail) {
+            $this->expectException(NotNormalizableValueException::class);
+            $this->expectExceptionMessage(
+                'The type property "type" for the abstract object "Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummy" must be a string or a stringable object.'
+            );
+        }
+
+        $factory = new ClassMetadataFactory(new AttributeLoader());
+
+        $loaderMock = new class implements ClassMetadataFactoryInterface {
+            public function getMetadataFor($value): ClassMetadataInterface
+            {
+                if (AbstractDummy::class === $value) {
+                    return new ClassMetadata(
+                        AbstractDummy::class,
+                        new ClassDiscriminatorMapping('type', [
+                            'first' => AbstractDummyFirstChild::class,
+                            'second' => AbstractDummySecondChild::class,
+                        ])
+                    );
+                }
+
+                throw new InvalidArgumentException();
+            }
+
+            public function hasMetadataFor($value): bool
+            {
+                return AbstractDummy::class === $value;
+            }
+        };
+
+        $discriminatorResolver = new ClassDiscriminatorFromClassMetadata($loaderMock);
+        $normalizer = new AbstractObjectNormalizerDummy($factory, null, new ReflectionExtractor(), $discriminatorResolver);
+        $serializer = new Serializer([$normalizer]);
+        $normalizer->setSerializer($serializer);
+        $normalizedData = $normalizer->denormalize(['foo' => 'foo', 'baz' => 'baz', 'quux' => ['value' => 'quux'], 'type' => $typeValue], AbstractDummy::class);
+
+        $this->assertInstanceOf(DummyFirstChildQuux::class, $normalizedData->quux);
+    }
+
+    /**
+     * @return iterable<array{0: mixed, 1: bool}>
+     */
+    public static function provideInvalidDiscriminatorTypes(): iterable
+    {
+        $toStringObject = new class {
+            public function __toString()
+            {
+                return 'first';
+            }
+        };
+
+        yield [[], true];
+        yield [new \stdClass(), true];
+        yield [123, true];
+        yield [false, true];
+        yield ['first', false];
+        yield [$toStringObject, false];
+    }
+
     public function testDenormalizeWithDiscriminatorMapUsesCorrectClassname()
     {
         $factory = new ClassMetadataFactory(new AttributeLoader());

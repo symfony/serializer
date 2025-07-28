@@ -59,6 +59,7 @@ class XmlEncoder implements EncoderInterface, DecoderInterface, NormalizationAwa
     public const TYPE_CAST_ATTRIBUTES = 'xml_type_cast_attributes';
     public const VERSION = 'xml_version';
     public const CDATA_WRAPPING = 'cdata_wrapping';
+    public const CDATA_WRAPPING_NAME_PATTERN = 'cdata_wrapping_name_pattern';
     public const CDATA_WRAPPING_PATTERN = 'cdata_wrapping_pattern';
     public const IGNORE_EMPTY_ATTRIBUTES = 'ignore_empty_attributes';
 
@@ -72,6 +73,7 @@ class XmlEncoder implements EncoderInterface, DecoderInterface, NormalizationAwa
         self::ROOT_NODE_NAME => 'response',
         self::TYPE_CAST_ATTRIBUTES => true,
         self::CDATA_WRAPPING => true,
+        self::CDATA_WRAPPING_NAME_PATTERN => false,
         self::CDATA_WRAPPING_PATTERN => '/[<>&]/',
         self::IGNORE_EMPTY_ATTRIBUTES => false,
     ];
@@ -440,10 +442,15 @@ class XmlEncoder implements EncoderInterface, DecoderInterface, NormalizationAwa
 
     /**
      * Checks if a value contains any characters which would require CDATA wrapping.
+     *
+     * @param array<string, mixed> $context
      */
-    private function needsCdataWrapping(string $val, array $context): bool
+    private function needsCdataWrapping(string $name, string $val, array $context): bool
     {
-        return ($context[self::CDATA_WRAPPING] ?? $this->defaultContext[self::CDATA_WRAPPING]) && preg_match($context[self::CDATA_WRAPPING_PATTERN] ?? $this->defaultContext[self::CDATA_WRAPPING_PATTERN], $val);
+        return ($context[self::CDATA_WRAPPING] ?? $this->defaultContext[self::CDATA_WRAPPING])
+                && (preg_match($context[self::CDATA_WRAPPING_PATTERN] ?? $this->defaultContext[self::CDATA_WRAPPING_PATTERN], $val)
+                || (($context[self::CDATA_WRAPPING_NAME_PATTERN] ?? $this->defaultContext[self::CDATA_WRAPPING_NAME_PATTERN]) && preg_match($context[self::CDATA_WRAPPING_NAME_PATTERN] ?? $this->defaultContext[self::CDATA_WRAPPING_NAME_PATTERN], $name))
+                );
     }
 
     /**
@@ -471,7 +478,7 @@ class XmlEncoder implements EncoderInterface, DecoderInterface, NormalizationAwa
             return $this->selectNodeType($node, $this->serializer->normalize($val, $format, $context), $format, $context);
         } elseif (is_numeric($val)) {
             return $this->appendText($node, (string) $val);
-        } elseif (\is_string($val) && $this->needsCdataWrapping($val, $context)) {
+        } elseif (\is_string($val) && $this->needsCdataWrapping($node->nodeName, $val, $context)) {
             return $this->appendCData($node, $val);
         } elseif (\is_string($val)) {
             return $this->appendText($node, $val);
