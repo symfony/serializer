@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests\Attribute;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
@@ -65,9 +66,7 @@ class ContextTest extends TestCase
         self::assertSame([], $context->getGroups());
     }
 
-    /**
-     * @dataProvider provideValidInputs
-     */
+    #[DataProvider('provideValidInputs')]
     public function testValidInputs(callable $factory, string $expectedDump)
     {
         $this->assertDumpEquals($expectedDump, $factory());

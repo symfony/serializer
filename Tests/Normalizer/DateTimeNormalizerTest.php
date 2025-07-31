@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
@@ -60,9 +61,7 @@ class DateTimeNormalizerTest extends TestCase
         $this->assertSame('2016-12-01T09:00:00+09:00', $normalizer->normalize(new \DateTimeImmutable('2016/12/01', new \DateTimeZone('UTC'))));
     }
 
-    /**
-     * @dataProvider normalizeUsingTimeZonePassedInContextProvider
-     */
+    #[DataProvider('normalizeUsingTimeZonePassedInContextProvider')]
     public function testNormalizeUsingTimeZonePassedInContext($expected, $input, $timezone)
     {
         $this->assertSame($expected, $this->normalizer->normalize($input, null, [
@@ -78,9 +77,7 @@ class DateTimeNormalizerTest extends TestCase
         yield ['2016-12-01T09:00:00+09:00', new \DateTime('2016/12/01', new \DateTimeZone('UTC')), new \DateTimeZone('Japan')];
     }
 
-    /**
-     * @dataProvider normalizeUsingTimeZonePassedInContextAndExpectedFormatWithMicrosecondsProvider
-     */
+    #[DataProvider('normalizeUsingTimeZonePassedInContextAndExpectedFormatWithMicrosecondsProvider')]
     public function testNormalizeUsingTimeZonePassedInContextAndFormattedWithMicroseconds($expected, $expectedFormat, $input, $timezone)
     {
         $this->assertSame(
@@ -154,9 +151,7 @@ class DateTimeNormalizerTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider provideNormalizeUsingCastCases
-     */
+    #[DataProvider('provideNormalizeUsingCastCases')]
     public function testNormalizeUsingCastPassedInConstructor(\DateTimeInterface $value, string $format, ?string $cast, string|int|float $expectedResult)
     {
         $normalizer = new DateTimeNormalizer([DateTimeNormalizer::CAST_KEY => $cast]);
@@ -164,9 +159,7 @@ class DateTimeNormalizerTest extends TestCase
         $this->assertSame($normalizer->normalize($value, null, [DateTimeNormalizer::FORMAT_KEY => $format]), $expectedResult);
     }
 
-    /**
-     * @dataProvider provideNormalizeUsingCastCases
-     */
+    #[DataProvider('provideNormalizeUsingCastCases')]
     public function testNormalizeUsingCastPassedInContext(\DateTimeInterface $value, string $format, ?string $cast, string|int|float $expectedResult)
     {
         $this->assertSame($this->normalizer->normalize($value, null, [DateTimeNormalizer::FORMAT_KEY => $format, DateTimeNormalizer::CAST_KEY => $cast]), $expectedResult);
@@ -269,9 +262,7 @@ class DateTimeNormalizerTest extends TestCase
         $this->assertEquals(new \DateTime('2016/01/01'), $this->normalizer->denormalize('2016.01.01', \DateTime::class, null, [DateTimeNormalizer::FORMAT_KEY => 'Y.m.d|']));
     }
 
-    /**
-     * @dataProvider denormalizeUsingTimezonePassedInContextProvider
-     */
+    #[DataProvider('denormalizeUsingTimezonePassedInContextProvider')]
     public function testDenormalizeUsingTimezonePassedInContext($input, $expected, $timezone, $format = null)
     {
         $actual = $this->normalizer->denormalize($input, \DateTimeInterface::class, null, [

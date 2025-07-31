@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -436,9 +438,8 @@ class GetSetMethodNormalizerTest extends TestCase
 
     /**
      * @param class-string $class
-     *
-     * @dataProvider provideNotIgnoredMethodSupport
      */
+    #[DataProvider('provideNotIgnoredMethodSupport')]
     public function testNotIgnoredMethodSupport(string $class)
     {
         $this->assertFalse($this->normalizer->supportsNormalization(new $class()));
@@ -558,10 +559,8 @@ class GetSetMethodNormalizerTest extends TestCase
         $this->assertSame('foo', $obj->getFoo());
     }
 
-    /**
-     * @testWith [{"foo":"foo"}, "getFoo", "foo"]
-     *           [{"bar":"bar"}, "getBar", "bar"]
-     */
+    #[TestWith([['foo' => 'foo'], 'getFoo', 'foo'])]
+    #[TestWith([['bar' => 'bar'], 'getBar', 'bar'])]
     public function testSupportsAndDenormalizeWithOptionalSetterArgument(array $data, string $method, string $expected)
     {
         $this->assertTrue($this->normalizer->supportsDenormalization($data, GetSetDummyWithOptionalAndMultipleSetterArgs::class));

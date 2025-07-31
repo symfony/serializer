@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
@@ -191,9 +192,7 @@ class PropertyNormalizerTest extends TestCase
         $this->assertSame('childProp', $object->childProp);
     }
 
-    /**
-     * @requires PHP 8.4
-     */
+    #[RequiresPhp('8.4')]
     public function testDenormalizeWithAsymmetricPropertyVisibility()
     {
         /** @var SpecialBookDummy $object */

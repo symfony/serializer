@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
@@ -528,9 +529,7 @@ class AbstractObjectNormalizerTest extends TestCase
         return $denormalizer;
     }
 
-    /**
-     * @dataProvider provideInvalidDiscriminatorTypes
-     */
+    #[DataProvider('provideInvalidDiscriminatorTypes')]
     public function testDenormalizeWithDiscriminatorMapHandlesInvalidTypeValue(mixed $typeValue, bool $shouldFail)
     {
         if ($shouldFail) {
@@ -1283,9 +1282,7 @@ class AbstractObjectNormalizerTest extends TestCase
         $this->assertEquals($expected, $normalizer->denormalize(['foo' => 'bar'], MixedPropertyDummy::class));
     }
 
-    /**
-     * @dataProvider provideBooleanTypesData
-     */
+    #[DataProvider('provideBooleanTypesData')]
     public function testDenormalizeBooleanTypesWithNotMatchingData(array $data, string $type)
     {
         $normalizer = new AbstractObjectNormalizerWithMetadataAndPropertyTypeExtractors();
@@ -1322,9 +1319,7 @@ class AbstractObjectNormalizerTest extends TestCase
         $this->assertEquals($example, $deserialized);
     }
 
-    /**
-     * @dataProvider provideDenormalizeWithFilterBoolData
-     */
+    #[DataProvider('provideDenormalizeWithFilterBoolData')]
     public function testDenormalizeBooleanTypeWithFilterBool(array $data, ?bool $expectedFoo)
     {
         $normalizer = new AbstractObjectNormalizerWithMetadataAndPropertyTypeExtractors();
