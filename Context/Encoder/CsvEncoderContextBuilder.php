@@ -57,7 +57,6 @@ final class CsvEncoderContextBuilder implements ContextBuilderInterface
         return $this->with(CsvEncoder::ENCLOSURE_KEY, $enclosure);
     }
 
-
     /**
      * Configures the key separator when (un)flattening arrays.
      */
