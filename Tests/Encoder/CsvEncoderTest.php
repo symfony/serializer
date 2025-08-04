@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests\Encoder;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
@@ -705,7 +706,7 @@ CSV;
         $this->assertSame("foo,bar\r\nhello,test\r\n", $encoder->encode($value, 'csv'));
     }
 
-    /** @dataProvider provideIterable */
+    #[DataProvider('provideIterable')]
     public function testIterable(mixed $data)
     {
         $this->assertEquals(<<<'CSV'

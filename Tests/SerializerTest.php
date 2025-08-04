@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\Exception\InvalidTypeException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -55,6 +56,7 @@ use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummyFirstChild;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummySecondChild;
+use Symfony\Component\Serializer\Tests\Fixtures\Attributes\GroupClassDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\SerializedNameAttributeDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\DenormalizableDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyFirstChildQuux;
@@ -639,14 +641,14 @@ class SerializerTest extends TestCase
         yield [$serializer, $data];
     }
 
-    /** @dataProvider provideObjectOrCollectionTests */
+    #[DataProvider('provideObjectOrCollectionTests')]
     public function testNormalizeWithCollection(Serializer $serializer, array $data)
     {
         $expected = '{"a1":[],"a2":{"k":"v"},"b1":[],"b2":{"k":"v"},"c1":{"nested":[]},"c2":{"nested":{"k":"v"}},"d1":{"nested":[]},"d2":{"nested":{"k":"v"}},"e1":{"map":[]},"e2":{"map":{"k":"v"}},"f1":{"map":[]},"f2":{"map":{"k":"v"}},"g1":{"list":[],"settings":[]},"g2":{"list":["greg"],"settings":[]}}';
         $this->assertSame($expected, $serializer->serialize($data, 'json'));
     }
 
-    /** @dataProvider provideObjectOrCollectionTests */
+    #[DataProvider('provideObjectOrCollectionTests')]
     public function testNormalizePreserveEmptyArrayObject(Serializer $serializer, array $data)
     {
         $expected = '{"a1":{},"a2":{"k":"v"},"b1":[],"b2":{"k":"v"},"c1":{"nested":{}},"c2":{"nested":{"k":"v"}},"d1":{"nested":[]},"d2":{"nested":{"k":"v"}},"e1":{"map":[]},"e2":{"map":{"k":"v"}},"f1":{"map":{}},"f2":{"map":{"k":"v"}},"g1":{"list":{},"settings":[]},"g2":{"list":["greg"],"settings":[]}}';
@@ -655,7 +657,7 @@ class SerializerTest extends TestCase
         ]));
     }
 
-    /** @dataProvider provideObjectOrCollectionTests */
+    #[DataProvider('provideObjectOrCollectionTests')]
     public function testNormalizeEmptyArrayAsObject(Serializer $serializer, array $data)
     {
         $expected = '{"a1":[],"a2":{"k":"v"},"b1":{},"b2":{"k":"v"},"c1":{"nested":[]},"c2":{"nested":{"k":"v"}},"d1":{"nested":{}},"d2":{"nested":{"k":"v"}},"e1":{"map":{}},"e2":{"map":{"k":"v"}},"f1":{"map":[]},"f2":{"map":{"k":"v"}},"g1":{"list":[],"settings":{}},"g2":{"list":["greg"],"settings":{}}}';
@@ -664,7 +666,7 @@ class SerializerTest extends TestCase
         ]));
     }
 
-    /** @dataProvider provideObjectOrCollectionTests */
+    #[DataProvider('provideObjectOrCollectionTests')]
     public function testNormalizeEmptyArrayAsObjectAndPreserveEmptyArrayObject(Serializer $serializer, array $data)
     {
         $expected = '{"a1":{},"a2":{"k":"v"},"b1":{},"b2":{"k":"v"},"c1":{"nested":{}},"c2":{"nested":{"k":"v"}},"d1":{"nested":{}},"d2":{"nested":{"k":"v"}},"e1":{"map":{}},"e2":{"map":{"k":"v"}},"f1":{"map":{}},"f2":{"map":{"k":"v"}},"g1":{"list":{},"settings":{}},"g2":{"list":["greg"],"settings":{}}}';
@@ -924,9 +926,7 @@ class SerializerTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider provideCollectDenormalizationErrors
-     */
+    #[DataProvider('provideCollectDenormalizationErrors')]
     public function testCollectDenormalizationErrors(?ClassMetadataFactory $classMetadataFactory)
     {
         $json = '
@@ -1163,9 +1163,7 @@ class SerializerTest extends TestCase
         $this->assertSame($expected, $exceptionsAsArray);
     }
 
-    /**
-     * @dataProvider provideCollectDenormalizationErrors
-     */
+    #[DataProvider('provideCollectDenormalizationErrors')]
     public function testCollectDenormalizationErrors2(?ClassMetadataFactory $classMetadataFactory)
     {
         $json = '
@@ -1298,9 +1296,7 @@ class SerializerTest extends TestCase
         $this->assertSame($expected, $exceptionsAsArray);
     }
 
-    /**
-     * @dataProvider provideCollectDenormalizationErrors
-     */
+    #[DataProvider('provideCollectDenormalizationErrors')]
     public function testCollectDenormalizationErrorsWithConstructor(?ClassMetadataFactory $classMetadataFactory)
     {
         $json = '{"bool": "bool"}';
@@ -1526,7 +1522,7 @@ class SerializerTest extends TestCase
 
     public function testGroupsOnClassSerialization()
     {
-        $obj = new Fixtures\Attributes\GroupClassDummy();
+        $obj = new GroupClassDummy();
         $obj->setFoo('foo');
         $obj->setBar('bar');
         $obj->setBaz('baz');

@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests\Attribute;
 
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Attribute\MaxDepth;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
@@ -20,10 +21,8 @@ use Symfony\Component\Serializer\Exception\InvalidArgumentException;
  */
 class MaxDepthTest extends TestCase
 {
-    /**
-     * @testWith    [-4]
-     *              [0]
-     */
+    #[TestWith([-4])]
+    #[TestWith([0])]
     public function testNotAnIntMaxDepthParameter(int $value)
     {
         $this->expectException(InvalidArgumentException::class);

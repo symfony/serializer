@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Tests\Encoder;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
@@ -39,9 +40,7 @@ class XmlEncoderTest extends TestCase
         $this->encoder->setSerializer($serializer);
     }
 
-    /**
-     * @dataProvider validEncodeProvider
-     */
+    #[DataProvider('validEncodeProvider')]
     public function testEncode(string $expected, mixed $data, array $context = [])
     {
         $this->assertSame($expected, $this->encoder->encode($data, 'xml', $context));
