@@ -41,10 +41,10 @@ class CsvEncoderTest extends TestCase
 
         // Check that true and false are appropriately handled
         $this->assertSame($csv = <<<'CSV'
-string,int,false,true,int_one,string_one
-foo,2,0,1,1,1
+            string,int,false,true,int_one,string_one
+            foo,2,0,1,1,1
 
-CSV
+            CSV
             , $this->encoder->encode($data, 'csv'));
 
         $this->assertSame([
@@ -60,10 +60,10 @@ CSV
     public function testDoubleQuotesAndSlashes()
     {
         $this->assertSame($csv = <<<'CSV'
-0,1,2,3,4,5
-,"""","foo""","\""",\,foo\
+            0,1,2,3,4,5
+            ,"""","foo""","\""",\,foo\
 
-CSV
+            CSV
             , $this->encoder->encode($data = ['', '"', 'foo"', '\\"', '\\', 'foo\\'], 'csv'));
 
         $this->assertSame($data, $this->encoder->decode($csv, 'csv', [CsvEncoder::AS_COLLECTION_KEY => false]));
@@ -87,10 +87,10 @@ CSV
         $value = ['foo' => 'hello', 'bar' => 'hey ho'];
 
         $this->assertEquals(<<<'CSV'
-foo,bar
-hello,"hey ho"
+            foo,bar
+            hello,"hey ho"
 
-CSV
+            CSV
             , $this->encoder->encode($value, 'csv'));
     }
 
@@ -102,31 +102,31 @@ CSV
         ];
 
         $this->assertEquals(<<<'CSV'
-foo,bar
-hello,"hey ho"
-hi,"let's go"
+            foo,bar
+            hello,"hey ho"
+            hi,"let's go"
 
-CSV
+            CSV
             , $this->encoder->encode($value, 'csv'));
     }
 
     public function testEncodePlainIndexedArray()
     {
         $this->assertEquals(<<<'CSV'
-0,1,2
-a,b,c
+            0,1,2
+            a,b,c
 
-CSV
+            CSV
             , $this->encoder->encode(['a', 'b', 'c'], 'csv'));
     }
 
     public function testEncodeNonArray()
     {
         $this->assertEquals(<<<'CSV'
-0
-foo
+            0
+            foo
 
-CSV
+            CSV
             , $this->encoder->encode('foo', 'csv'));
     }
 
@@ -138,10 +138,10 @@ CSV
         ]];
 
         $this->assertEquals(<<<'CSV'
-foo,bar.0.id,bar.0.1,bar.1.baz,bar.1.foo
-hello,yo,wesh,Halo,olá
+            foo,bar.0.id,bar.0.1,bar.1.baz,bar.1.foo
+            hello,yo,wesh,Halo,olá
 
-CSV
+            CSV
             , $this->encoder->encode($value, 'csv'));
     }
 
@@ -156,10 +156,10 @@ CSV
         $value = ['a' => 'he\'llo', 'c' => ['d' => 'foo']];
 
         $this->assertEquals(<<<'CSV'
-a;c-d
-'he''llo';foo
+            a;c-d
+            'he''llo';foo
 
-CSV
+            CSV
             , $this->encoder->encode($value, 'csv'));
     }
 
@@ -168,10 +168,10 @@ CSV
         $value = ['a' => 'he\'llo', 'c' => ['d' => 'foo']];
 
         $this->assertSame(<<<'CSV'
-a;c-d
-'he''llo';foo
+            a;c-d
+            'he''llo';foo
 
-CSV
+            CSV
             , $this->encoder->encode($value, 'csv', [
                 CsvEncoder::DELIMITER_KEY => ';',
                 CsvEncoder::ENCLOSURE_KEY => "'",
@@ -189,10 +189,10 @@ CSV
         $value = ['a' => 'he\'llo', 'c' => ['d' => 'foo']];
 
         $this->assertSame(<<<'CSV'
-a;c-d
-'he''llo';foo
+            a;c-d
+            'he''llo';foo
 
-CSV
+            CSV
             , $encoder->encode($value, 'csv'));
     }
 
@@ -224,12 +224,12 @@ CSV
             ['a' => ['bar', 'foo'], 'c' => 'pong'],
         ];
         $csv = <<<CSV
-a.0,a.1,c,b
-foo,bar,,
-,,,baz
-bar,foo,pong,
+            a.0,a.1,c,b
+            foo,bar,,
+            ,,,baz
+            bar,foo,pong,
 
-CSV;
+            CSV;
 
         $this->assertEquals($csv, $this->encoder->encode($value, 'csv'));
     }
@@ -246,10 +246,10 @@ CSV;
             ['a' => 'foo', 'b' => 'bar'],
         ];
         $csv = <<<CSV
-b,c,a
-bar,,foo
+            b,c,a
+            bar,,foo
 
-CSV;
+            CSV;
 
         $this->assertEquals($csv, $this->encoder->encode($value, 'csv', $context));
     }
@@ -259,168 +259,168 @@ CSV;
         $this->encoder = new CsvEncoder([CsvEncoder::ESCAPE_FORMULAS_KEY => true]);
 
         $this->assertSame(<<<'CSV'
-0
-'=2+3
+            0
+            '=2+3
 
-CSV
+            CSV
             , $this->encoder->encode(['=2+3'], 'csv'));
 
         $this->assertSame(<<<'CSV'
-0
-'-2+3
+            0
+            '-2+3
 
-CSV
+            CSV
             , $this->encoder->encode(['-2+3'], 'csv'));
 
         $this->assertSame(<<<'CSV'
-0
-'+2+3
+            0
+            '+2+3
 
-CSV
+            CSV
             , $this->encoder->encode(['+2+3'], 'csv'));
 
         $this->assertSame(<<<'CSV'
-0
-'@MyDataColumn
+            0
+            '@MyDataColumn
 
-CSV
+            CSV
             , $this->encoder->encode(['@MyDataColumn'], 'csv'));
 
         $this->assertSame(<<<'CSV'
-0
-"'	tab"
+            0
+            "'	tab"
 
-CSV
+            CSV
             , $this->encoder->encode(["\ttab"], 'csv'));
 
         $this->assertSame(<<<'CSV'
-0
-"'=1+2"";=1+2"
+            0
+            "'=1+2"";=1+2"
 
-CSV
+            CSV
             , $this->encoder->encode(['=1+2";=1+2'], 'csv'));
 
         $this->assertSame(<<<'CSV'
-0
-"'=1+2'"" ;,=1+2"
+            0
+            "'=1+2'"" ;,=1+2"
 
-CSV
+            CSV
             , $this->encoder->encode(['=1+2\'" ;,=1+2'], 'csv'));
     }
 
     public function testDoNotEncodeFormulas()
     {
         $this->assertSame(<<<'CSV'
-0
-=2+3
+            0
+            =2+3
 
-CSV
+            CSV
             , $this->encoder->encode(['=2+3'], 'csv'));
 
         $this->assertSame(<<<'CSV'
-0
--2+3
+            0
+            -2+3
 
-CSV
+            CSV
             , $this->encoder->encode(['-2+3'], 'csv'));
 
         $this->assertSame(<<<'CSV'
-0
-+2+3
+            0
+            +2+3
 
-CSV
+            CSV
             , $this->encoder->encode(['+2+3'], 'csv'));
 
         $this->assertSame(<<<'CSV'
-0
-@MyDataColumn
+            0
+            @MyDataColumn
 
-CSV
+            CSV
             , $this->encoder->encode(['@MyDataColumn'], 'csv'));
 
         $this->assertSame(<<<'CSV'
-0
-"	tab"
+            0
+            "	tab"
 
-CSV
+            CSV
             , $this->encoder->encode(["\ttab"], 'csv'));
 
         $this->assertSame(<<<'CSV'
-0
-"=1+2"";=1+2"
+            0
+            "=1+2"";=1+2"
 
-CSV
+            CSV
             , $this->encoder->encode(['=1+2";=1+2'], 'csv'));
 
         $this->assertSame(<<<'CSV'
-0
-"=1+2'"" ;,=1+2"
+            0
+            "=1+2'"" ;,=1+2"
 
-CSV
+            CSV
             , $this->encoder->encode(['=1+2\'" ;,=1+2'], 'csv'));
     }
 
     public function testEncodeFormulasWithSettingsPassedInContext()
     {
         $this->assertSame(<<<'CSV'
-0
-'=2+3
+            0
+            '=2+3
 
-CSV
+            CSV
             , $this->encoder->encode(['=2+3'], 'csv', [
                 CsvEncoder::ESCAPE_FORMULAS_KEY => true,
             ]));
 
         $this->assertSame(<<<'CSV'
-0
-'-2+3
+            0
+            '-2+3
 
-CSV
+            CSV
             , $this->encoder->encode(['-2+3'], 'csv', [
                 CsvEncoder::ESCAPE_FORMULAS_KEY => true,
             ]));
 
         $this->assertSame(<<<'CSV'
-0
-'+2+3
+            0
+            '+2+3
 
-CSV
+            CSV
             , $this->encoder->encode(['+2+3'], 'csv', [
                 CsvEncoder::ESCAPE_FORMULAS_KEY => true,
             ]));
 
         $this->assertSame(<<<'CSV'
-0
-'@MyDataColumn
+            0
+            '@MyDataColumn
 
-CSV
+            CSV
             , $this->encoder->encode(['@MyDataColumn'], 'csv', [
                 CsvEncoder::ESCAPE_FORMULAS_KEY => true,
             ]));
 
         $this->assertSame(<<<'CSV'
-0
-"'	tab"
+            0
+            "'	tab"
 
-CSV
+            CSV
             , $this->encoder->encode(["\ttab"], 'csv', [
                 CsvEncoder::ESCAPE_FORMULAS_KEY => true,
             ]));
 
         $this->assertSame(<<<'CSV'
-0
-"'=1+2"";=1+2"
+            0
+            "'=1+2"";=1+2"
 
-CSV
+            CSV
             , $this->encoder->encode(['=1+2";=1+2'], 'csv', [
                 CsvEncoder::ESCAPE_FORMULAS_KEY => true,
             ]));
 
         $this->assertSame(<<<'CSV'
-0
-"'=1+2'"" ;,=1+2"
+            0
+            "'=1+2'"" ;,=1+2"
 
-CSV
+            CSV
             , $this->encoder->encode(['=1+2\'" ;,=1+2'], 'csv', [
                 CsvEncoder::ESCAPE_FORMULAS_KEY => true,
             ]));
@@ -429,19 +429,19 @@ CSV
     public function testEncodeWithoutHeader()
     {
         $this->assertSame(<<<'CSV'
-a,b
-c,d
+            a,b
+            c,d
 
-CSV
+            CSV
             , $this->encoder->encode([['a', 'b'], ['c', 'd']], 'csv', [
                 CsvEncoder::NO_HEADERS_KEY => true,
             ]));
         $encoder = new CsvEncoder([CsvEncoder::NO_HEADERS_KEY => true]);
         $this->assertSame(<<<'CSV'
-a,b
-c,d
+            a,b
+            c,d
 
-CSV
+            CSV
             , $encoder->encode([['a', 'b'], ['c', 'd']], 'csv', [
                 CsvEncoder::NO_HEADERS_KEY => true,
             ]));
@@ -452,10 +452,10 @@ CSV
         $value = new \ArrayObject(['foo' => 'hello', 'bar' => 'hey ho']);
 
         $this->assertEquals(<<<'CSV'
-foo,bar
-hello,"hey ho"
+            foo,bar
+            hello,"hey ho"
 
-CSV
+            CSV
             , $this->encoder->encode($value, 'csv'));
 
         $value = new \ArrayObject();
@@ -468,10 +468,10 @@ CSV
         $value = new \ArrayObject(['foo' => new \ArrayObject(['nested' => 'value']), 'bar' => new \ArrayObject(['another' => 'word'])]);
 
         $this->assertEquals(<<<'CSV'
-foo.nested,bar.another
-value,word
+            foo.nested,bar.another
+            value,word
 
-CSV
+            CSV
             , $this->encoder->encode($value, 'csv'));
     }
 
@@ -495,9 +495,9 @@ CSV
         $expected = ['foo' => 'a', 'bar' => 'b'];
 
         $this->assertEquals($expected, $this->encoder->decode(<<<'CSV'
-foo,bar
-a,b
-CSV
+            foo,bar
+            a,b
+            CSV
             , 'csv', [CsvEncoder::AS_COLLECTION_KEY => false]));
     }
 
@@ -510,12 +510,12 @@ CSV
         ];
 
         $this->assertEquals($expected, $this->encoder->decode(<<<'CSV'
-foo,bar
-a,b
-c,d
-f
+            foo,bar
+            a,b
+            c,d
+            f
 
-CSV
+            CSV
             , 'csv'));
     }
 
@@ -526,10 +526,10 @@ CSV
         ];
 
         $this->assertEquals($expected, $this->encoder->decode(<<<'CSV'
-foo
-a
+            foo
+            a
 
-CSV
+            CSV
             , 'csv'));
     }
 
@@ -543,12 +543,12 @@ CSV
         ];
 
         $this->assertEquals($expected, $this->encoder->decode(<<<'CSV'
-foo,relations.0.a,relations.1.a
-bar,b,b
-bat,b,
-bat,b
-baz,c,c
-CSV
+            foo,relations.0.a,relations.1.a
+            bar,b,b
+            bat,b,
+            bat,b
+            baz,c,c
+            CSV
             , 'csv'));
     }
 
@@ -560,10 +560,10 @@ CSV
         ];
 
         $this->assertEquals($expected, $this->encoder->decode(<<<'CSV'
-foo,bar.baz.bat
-a,b
-c,d
-CSV
+            foo,bar.baz.bat
+            a,b
+            c,d
+            CSV
             , 'csv'));
     }
 
@@ -577,9 +577,9 @@ CSV
 
         $expected = [['a' => 'hell\'o', 'bar' => ['baz' => 'b']]];
         $this->assertEquals($expected, $this->encoder->decode(<<<'CSV'
-a;bar-baz
-'hell''o';b;c
-CSV
+            a;bar-baz
+            'hell''o';b;c
+            CSV
             , 'csv'));
     }
 
@@ -587,9 +587,9 @@ CSV
     {
         $expected = [['a' => 'hell\'o', 'bar' => ['baz' => 'b']]];
         $this->assertEquals($expected, $this->encoder->decode(<<<'CSV'
-a;bar-baz
-'hell''o';b;c
-CSV
+            a;bar-baz
+            'hell''o';b;c
+            CSV
             , 'csv', [
                 CsvEncoder::DELIMITER_KEY => ';',
                 CsvEncoder::ENCLOSURE_KEY => "'",
@@ -607,9 +607,9 @@ CSV
         ]);
         $expected = [['a' => 'hell\'o', 'bar' => ['baz' => 'b']]];
         $this->assertEquals($expected, $encoder->decode(<<<'CSV'
-a;bar-baz
-'hell''o';b;c
-CSV
+            a;bar-baz
+            'hell''o';b;c
+            CSV
             , 'csv'));
     }
 
@@ -622,12 +622,12 @@ CSV
         ];
 
         $this->assertEquals($expected, $this->encoder->decode(<<<'CSV'
-foo,bar
-a,b,e
-c,d,g,h
-f
+            foo,bar
+            a,b,e
+            c,d,g,h
+            f
 
-CSV
+            CSV
             , 'csv'));
     }
 
@@ -639,19 +639,19 @@ CSV
     public function testDecodeWithoutHeader()
     {
         $this->assertEquals([['a', 'b'], ['c', 'd']], $this->encoder->decode(<<<'CSV'
-a,b
-c,d
+            a,b
+            c,d
 
-CSV
+            CSV
             , 'csv', [
                 CsvEncoder::NO_HEADERS_KEY => true,
             ]));
         $encoder = new CsvEncoder([CsvEncoder::NO_HEADERS_KEY => true]);
         $this->assertEquals([['a', 'b'], ['c', 'd']], $encoder->decode(<<<'CSV'
-a,b
-c,d
+            a,b
+            c,d
 
-CSV
+            CSV
             , 'csv', [
                 CsvEncoder::NO_HEADERS_KEY => true,
             ]));
@@ -662,10 +662,10 @@ CSV
         $value = ['foo' => 'hello', 'bar' => 'hey ho'];
 
         $this->assertEquals("\xEF\xBB\xBF".<<<'CSV'
-foo,bar
-hello,"hey ho"
+            foo,bar
+            hello,"hey ho"
 
-CSV
+            CSV
             , $this->encoder->encode($value, 'csv', [CsvEncoder::OUTPUT_UTF8_BOM_KEY => true]));
     }
 
@@ -681,10 +681,10 @@ CSV
     public function testBOMIsStripped()
     {
         $csv = "\xEF\xBB\xBF".<<<'CSV'
-foo,bar
-hello,"hey ho"
+            foo,bar
+            hello,"hey ho"
 
-CSV;
+            CSV;
         $this->assertEquals(
             ['foo' => 'hello', 'bar' => 'hey ho'],
             $this->encoder->decode($csv, 'csv', [CsvEncoder::AS_COLLECTION_KEY => false])
