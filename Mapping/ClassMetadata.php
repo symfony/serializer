@@ -13,6 +13,8 @@ namespace Symfony\Component\Serializer\Mapping;
 
 /**
  * @author Kévin Dunglas <dunglas@gmail.com>
+ *
+ * @final since Symfony 7.4
  */
 class ClassMetadata implements ClassMetadataInterface
 {
@@ -92,9 +94,9 @@ class ClassMetadata implements ClassMetadataInterface
     }
 
     /**
-     * Returns the names of the properties that should be serialized.
+     * @internal since Symfony 7.4, will be replaced by `__serialize()` in 8.0
      *
-     * @return string[]
+     * @final since Symfony 7.4
      */
     public function __sleep(): array
     {
