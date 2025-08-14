@@ -1847,7 +1847,7 @@ class ArrayDenormalizerDummy implements DenormalizerInterface, SerializerAwareIn
 
 class NotSerializable
 {
-    public function __sleep(): array
+    public function __serialize(): array
     {
         throw new \Error('not serializable');
     }
