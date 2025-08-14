@@ -30,6 +30,7 @@ CHANGELOG
 
  * Add `CDATA_WRAPPING_NAME_PATTERN` support to `XmlEncoder`
  * Add support for `can*()` methods to `AttributeLoader`
+ * Make `AttributeMetadata` and `ClassMetadata` final
 
 7.3
 ---
