@@ -96,7 +96,7 @@ class ClassMetadata implements ClassMetadataInterface
     /**
      * @internal since Symfony 7.4, will be replaced by `__serialize()` in 8.0
      *
-     * @final since Symfony 7.4
+     * @final since Symfony 7.4, will be replaced by `__serialize()` in 8.0
      */
     public function __sleep(): array
     {
