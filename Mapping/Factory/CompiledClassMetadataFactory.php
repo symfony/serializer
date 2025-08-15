@@ -56,13 +56,17 @@ final class CompiledClassMetadataFactory implements ClassMetadataFactoryInterfac
         if (!isset($this->loadedClasses[$className])) {
             $classMetadata = new ClassMetadata($className);
             foreach ($this->compiledClassMetadata[$className][0] as $name => $compiledAttributesMetadata) {
-                $classMetadata->attributesMetadata[$name] = $attributeMetadata = new AttributeMetadata($name);
-                [$attributeMetadata->groups, $attributeMetadata->maxDepth, $attributeMetadata->serializedName] = $compiledAttributesMetadata;
+                $classMetadata->addAttributeMetadata($attributeMetadata = new AttributeMetadata($name));
+                foreach ($compiledAttributesMetadata[0] as $group) {
+                    $attributeMetadata->addGroup($group);
+                }
+                $attributeMetadata->setMaxDepth($compiledAttributesMetadata[1]);
+                $attributeMetadata->setSerializedName($compiledAttributesMetadata[2]);
             }
-            $classMetadata->classDiscriminatorMapping = $this->compiledClassMetadata[$className][1]
+            $classMetadata->setClassDiscriminatorMapping($this->compiledClassMetadata[$className][1]
                 ? new ClassDiscriminatorMapping(...$this->compiledClassMetadata[$className][1])
                 : null
-            ;
+            );
 
             $this->loadedClasses[$className] = $classMetadata;
         }
