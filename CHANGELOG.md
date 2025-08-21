@@ -7,6 +7,8 @@ CHANGELOG
  * Add `CDATA_WRAPPING_NAME_PATTERN` support to `XmlEncoder`
  * Add support for `can*()` methods to `AttributeLoader`
  * Make `AttributeMetadata` and `ClassMetadata` final
+ * Deprecate class aliases in the `Annotation` namespace, use attributes instead
+ * Deprecate getters in attribute classes in favor of public properties
 
 7.3
 ---

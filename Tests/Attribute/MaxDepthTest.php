@@ -33,6 +33,6 @@ class MaxDepthTest extends TestCase
     public function testMaxDepthParameters()
     {
         $maxDepth = new MaxDepth(3);
-        $this->assertEquals(3, $maxDepth->getMaxDepth());
+        $this->assertEquals(3, $maxDepth->maxDepth);
     }
 }

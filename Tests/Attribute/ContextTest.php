@@ -50,20 +50,20 @@ class ContextTest extends TestCase
     {
         $context = new Context(['foo' => 'bar']);
 
-        self::assertSame(['foo' => 'bar'], $context->getContext());
-        self::assertSame([], $context->getNormalizationContext());
-        self::assertSame([], $context->getDenormalizationContext());
-        self::assertSame([], $context->getGroups());
+        self::assertSame(['foo' => 'bar'], $context->context);
+        self::assertSame([], $context->normalizationContext);
+        self::assertSame([], $context->denormalizationContext);
+        self::assertSame([], $context->groups);
     }
 
     public function testAsContextArg()
     {
         $context = new Context(context: ['foo' => 'bar']);
 
-        self::assertSame(['foo' => 'bar'], $context->getContext());
-        self::assertSame([], $context->getNormalizationContext());
-        self::assertSame([], $context->getDenormalizationContext());
-        self::assertSame([], $context->getGroups());
+        self::assertSame(['foo' => 'bar'], $context->context);
+        self::assertSame([], $context->normalizationContext);
+        self::assertSame([], $context->denormalizationContext);
+        self::assertSame([], $context->groups);
     }
 
     #[DataProvider('provideValidInputs')]
@@ -78,12 +78,12 @@ class ContextTest extends TestCase
             fn () => new Context(context: ['foo' => 'bar']),
             <<<DUMP
                 Symfony\Component\Serializer\Attribute\Context {
-                  -groups: []
-                  -context: [
+                  +groups: []
+                  +context: [
                     "foo" => "bar",
                   ]
-                  -normalizationContext: []
-                  -denormalizationContext: []
+                  +normalizationContext: []
+                  +denormalizationContext: []
                 }
                 DUMP,
         ];
@@ -92,12 +92,12 @@ class ContextTest extends TestCase
             fn () => new Context(normalizationContext: ['foo' => 'bar']),
             <<<DUMP
                 Symfony\Component\Serializer\Attribute\Context {
-                  -groups: []
-                  -context: []
-                  -normalizationContext: [
+                  +groups: []
+                  +context: []
+                  +normalizationContext: [
                     "foo" => "bar",
                   ]
-                  -denormalizationContext: []
+                  +denormalizationContext: []
                 }
                 DUMP,
         ];
@@ -106,10 +106,10 @@ class ContextTest extends TestCase
             fn () => new Context(denormalizationContext: ['foo' => 'bar']),
             <<<DUMP
                 Symfony\Component\Serializer\Attribute\Context {
-                  -groups: []
-                  -context: []
-                  -normalizationContext: []
-                  -denormalizationContext: [
+                  +groups: []
+                  +context: []
+                  +normalizationContext: []
+                  +denormalizationContext: [
                     "foo" => "bar",
                   ]
                 }
@@ -120,14 +120,14 @@ class ContextTest extends TestCase
             fn () => new Context(context: ['foo' => 'bar'], groups: 'a'),
             <<<DUMP
                 Symfony\Component\Serializer\Attribute\Context {
-                  -groups: [
+                  +groups: [
                     "a",
                   ]
-                  -context: [
+                  +context: [
                     "foo" => "bar",
                   ]
-                  -normalizationContext: []
-                  -denormalizationContext: []
+                  +normalizationContext: []
+                  +denormalizationContext: []
                 }
                 DUMP,
         ];
@@ -136,15 +136,15 @@ class ContextTest extends TestCase
             fn () => new Context(context: ['foo' => 'bar'], groups: ['a', 'b']),
             <<<DUMP
                 Symfony\Component\Serializer\Attribute\Context {
-                  -groups: [
+                  +groups: [
                     "a",
                     "b",
                   ]
-                  -context: [
+                  +context: [
                     "foo" => "bar",
                   ]
-                  -normalizationContext: []
-                  -denormalizationContext: []
+                  +normalizationContext: []
+                  +denormalizationContext: []
                 }
                 DUMP,
         ];
