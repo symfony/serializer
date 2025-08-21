@@ -27,9 +27,9 @@ class DiscriminatorMap
      * @throws InvalidArgumentException
      */
     public function __construct(
-        private readonly string $typeProperty,
-        private readonly array $mapping,
-        private readonly ?string $defaultType = null,
+        public readonly string $typeProperty,
+        public readonly array $mapping,
+        public readonly ?string $defaultType = null,
     ) {
         if (!$typeProperty) {
             throw new InvalidArgumentException(\sprintf('Parameter "typeProperty" given to "%s" cannot be empty.', static::class));
@@ -44,16 +44,19 @@ class DiscriminatorMap
         }
     }
 
+    #[\Deprecated('Use the "typeProperty" property instead', 'symfony/serializer:7.4')]
     public function getTypeProperty(): string
     {
         return $this->typeProperty;
     }
 
+    #[\Deprecated('Use the "mapping" property instead', 'symfony/serializer:7.4')]
     public function getMapping(): array
     {
         return $this->mapping;
     }
 
+    #[\Deprecated('Use the "defaultType" property instead', 'symfony/serializer:7.4')]
     public function getDefaultType(): ?string
     {
         return $this->defaultType;
