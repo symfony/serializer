@@ -24,6 +24,8 @@ CHANGELOG
    ```
  * Remove `AdvancedNameConverterInterface`, use `NameConverterInterface` instead
  * Remove the `CompiledClassMetadataFactory` and `CompiledClassMetadataCacheWarmer` classes
+ * Remove class aliases in the `Annotation` namespace, use attributes instead
+ * Remove getters in attribute classes in favor of public properties
 
 7.4
 ---
