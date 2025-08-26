@@ -247,6 +247,31 @@ class AttributeLoaderTest extends TestCase
         self::assertArrayNotHasKey('h', $attributesMetadata);
     }
 
+    public function testGetMappedClasses()
+    {
+        $mappedClasses = ['App\Entity\User', 'App\Entity\Product'];
+        $loader = new AttributeLoader(false, $mappedClasses);
+
+        $this->assertSame($mappedClasses, $loader->getMappedClasses());
+    }
+
+    public function testLoadClassMetadataReturnsFalseForUnmappedClass()
+    {
+        $loader = new AttributeLoader(false, ['App\Entity\User']);
+        $classMetadata = new ClassMetadata('App\Entity\Product');
+
+        $this->assertFalse($loader->loadClassMetadata($classMetadata));
+    }
+
+    public function testLoadClassMetadataForMappedClassWithAttributes()
+    {
+        $loader = new AttributeLoader(false, [GroupDummy::class]);
+        $classMetadata = new ClassMetadata(GroupDummy::class);
+
+        $this->assertTrue($loader->loadClassMetadata($classMetadata));
+        $this->assertNotEmpty($classMetadata->getAttributesMetadata());
+    }
+
     protected function getLoaderForContextMapping(): AttributeLoader
     {
         return $this->loader;

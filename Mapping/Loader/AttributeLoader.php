@@ -43,12 +43,31 @@ class AttributeLoader implements LoaderInterface
         Context::class,
     ];
 
-    public function __construct()
+    /**
+     * @param bool|null      $allowAnyClass Null is allowed for BC with Symfony <= 6
+     * @param class-string[] $mappedClasses
+     */
+    public function __construct(
+        private ?bool $allowAnyClass = true,
+        private array $mappedClasses = [],
+    ) {
+        $this->allowAnyClass ??= true;
+    }
+
+    /**
+     * @return class-string[]
+     */
+    public function getMappedClasses(): array
     {
+        return $this->mappedClasses;
     }
 
     public function loadClassMetadata(ClassMetadataInterface $classMetadata): bool
     {
+        if (!$this->allowAnyClass && !\in_array($classMetadata->getName(), $this->mappedClasses, true)) {
+            return false;
+        }
+
         $reflectionClass = $classMetadata->getReflectionClass();
         $className = $reflectionClass->name;
         $loaded = false;
