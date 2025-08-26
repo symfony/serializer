@@ -381,6 +381,62 @@ class SerializerPassTest extends TestCase
         $this->assertCount(2, $encoderDefinition->getTag('serializer.encoder.api2'));
     }
 
+    /**
+     * @dataProvider provideEmptyTagsData
+     */
+    public function testEmptyTagsAreIgnoredWhenNonEmptyArePresent(
+        array $tagAttributesList,
+        array $expectedDefaultTags,
+        array $expectedApiTags,
+    ) {
+        $container = new ContainerBuilder();
+
+        $container->setParameter('kernel.debug', false);
+        $container->setParameter('.serializer.named_serializers', ['api' => []]);
+
+        $container->register('serializer')->setArguments([null, null]);
+        $container->register('n0')->addTag('serializer.normalizer', ['serializer' => ['default', 'api']]);
+        $container->register('e0')->addTag('serializer.encoder', ['serializer' => ['default', 'api']]);
+
+        $normalizerDefinition = $container->register('n1')->setTags(['serializer.normalizer' => $tagAttributesList]);
+        $encoderDefinition = $container->register('e1')->setTags(['serializer.encoder' => $tagAttributesList]);
+
+        $serializerPass = new SerializerPass();
+        $serializerPass->process($container);
+
+        $this->assertSame($expectedDefaultTags, $normalizerDefinition->getTag('serializer.normalizer.default'));
+        $this->assertSame($expectedApiTags, $normalizerDefinition->getTag('serializer.normalizer.api'));
+        $this->assertSame($expectedDefaultTags, $encoderDefinition->getTag('serializer.encoder.default'));
+        $this->assertSame($expectedApiTags, $encoderDefinition->getTag('serializer.encoder.api'));
+    }
+
+    public static function provideEmptyTagsData(): iterable
+    {
+        yield 'with default name' => [
+            [[], ['serializer' => 'default']],
+            [[]],
+            [],
+        ];
+
+        yield 'with non-default name' => [
+            [[], ['serializer' => 'api']],
+            [],
+            [[]],
+        ];
+
+        yield 'with wildcard' => [
+            [[], ['serializer' => '*']],
+            [[]],
+            [[]],
+        ];
+
+        yield 'with priority and no name' => [
+            [[], ['priority' => 100]],
+            [['priority' => 100]],
+            [],
+        ];
+    }
+
     public function testThrowExceptionWhenNoNormalizersForNamedSerializers()
     {
         $container = new ContainerBuilder();

@@ -89,6 +89,10 @@ class SerializerPass implements CompilerPassInterface
         foreach ($container->findTaggedServiceIds($tagName) as $serviceId => $tags) {
             $definition = $container->getDefinition($serviceId);
 
+            if (array_any($tags, $closure = fn (array $tag) => (bool) $tag)) {
+                $tags = array_filter($tags, $closure);
+            }
+
             foreach ($tags as $tag) {
                 $names = (array) ($tag['serializer'] ?? []);
 
