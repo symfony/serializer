@@ -17,7 +17,7 @@
     ],
     "require": {
         "php": ">=8.4",
-        "symfony/polyfill-ctype": "~1.8"
+        "symfony/polyfill-ctype": "^1.8"
     },
     "require-dev": {
         "phpdocumentor/reflection-docblock": "^3.2|^4.0|^5.0",
