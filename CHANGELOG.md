@@ -4,6 +4,7 @@ CHANGELOG
 7.4
 ---
 
+ * Add `#[ExtendsSerializationFor]` to declare new serialization attributes for a class
  * Add `AttributeMetadataPass` to declare compile-time constraint metadata using attributes
  * Add `CDATA_WRAPPING_NAME_PATTERN` support to `XmlEncoder`
  * Add support for `can*()` methods to `AttributeLoader`
