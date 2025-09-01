@@ -179,16 +179,9 @@ class ObjectNormalizer extends AbstractObjectNormalizer
             return self::$isReadableCache[$class.$attribute];
         }
 
-        if (!isset(self::$isWritableCache[$class.$attribute])) {
-            if (str_contains($attribute, '.')) {
-                self::$isWritableCache[$class.$attribute] = true;
-            } else {
-                self::$isWritableCache[$class.$attribute] = $this->propertyInfoExtractor->isWritable($class, $attribute)
-                    || (($writeInfo = $this->writeInfoExtractor->getWriteInfo($class, $attribute)) && PropertyWriteInfo::TYPE_NONE !== $writeInfo->getType());
-            }
-        }
-
-        return self::$isWritableCache[$class.$attribute];
+        return self::$isWritableCache[$class.$attribute] ??= str_contains($attribute, '.')
+            || $this->propertyInfoExtractor->isWritable($class, $attribute)
+            || !\in_array($this->writeInfoExtractor->getWriteInfo($class, $attribute)?->getType(), [null, PropertyWriteInfo::TYPE_NONE, PropertyWriteInfo::TYPE_PROPERTY], true);
     }
 
     private function hasAttributeAccessorMethod(string $class, string $attribute): bool
