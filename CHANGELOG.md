@@ -30,11 +30,13 @@ CHANGELOG
 7.4
 ---
 
+ * Add `AttributeMetadataPass` to declare compile-time constraint metadata using attributes
  * Add `CDATA_WRAPPING_NAME_PATTERN` support to `XmlEncoder`
  * Add support for `can*()` methods to `AttributeLoader`
  * Make `AttributeMetadata` and `ClassMetadata` final
  * Deprecate class aliases in the `Annotation` namespace, use attributes instead
  * Deprecate getters in attribute classes in favor of public properties
+ * Deprecate `ClassMetadataFactoryCompiler`
 
 7.3
 ---

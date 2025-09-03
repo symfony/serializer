@@ -11,6 +11,8 @@
 
 namespace Symfony\Component\Serializer\Tests\Mapping\Factory;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryCompiler;
@@ -25,6 +27,8 @@ use Symfony\Component\Serializer\Tests\Fixtures\Attributes\SerializedPathDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\SerializedPathInConstructorDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Dummy;
 
+#[IgnoreDeprecations]
+#[Group('legacy')]
 final class ClassMetadataFactoryCompilerTest extends TestCase
 {
     private string $dumpPath;
