@@ -52,6 +52,7 @@ use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
 use Symfony\Component\Serializer\Normalizer\UidNormalizer;
 use Symfony\Component\Serializer\Normalizer\UnwrappingDenormalizer;
 use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\Tests\Fixtures\AsymmetricVisibilityDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummyFirstChild;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummySecondChild;
@@ -1761,6 +1762,19 @@ class SerializerTest extends TestCase
 
             $this->assertSame($expected, $exceptionsAsArray);
         }
+    }
+
+    /**
+     * @requires PHP 8.4
+     */
+    public function testDeserializeObjectWithAsymmetricPropertyVisibility()
+    {
+        $serializer = new Serializer([new ObjectNormalizer()], ['json' => new JsonEncoder()]);
+        /** @var AsymmetricVisibilityDummy $object */
+        $object = $serializer->deserialize(json_encode(['type' => 'This value must not be changed because the property has a private setter', 'item' => 'one']), AsymmetricVisibilityDummy::class, 'json');
+
+        $this->assertSame('one', $object->item);
+        $this->assertSame('final', $object->type); // Value set in the constructor; must not be changed during deserialization
     }
 }
 
