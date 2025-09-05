@@ -281,8 +281,8 @@ class Serializer implements SerializerInterface, ContextAwareNormalizerInterface
             $genericType = '*';
         }
 
-        if (!isset($this->normalizerCache[$format][$type])) {
-            $this->normalizerCache[$format][$type] = [];
+        if (!isset($this->normalizerCache[$format ?? ''][$type])) {
+            $this->normalizerCache[$format ?? ''][$type] = [];
 
             foreach ($this->normalizers as $k => $normalizer) {
                 if (!$normalizer instanceof NormalizerInterface) {
@@ -293,9 +293,9 @@ class Serializer implements SerializerInterface, ContextAwareNormalizerInterface
                     trigger_deprecation('symfony/serializer', '6.3', '"%s" should implement "NormalizerInterface::getSupportedTypes(?string $format): array".', $normalizer::class);
 
                     if (!$normalizer instanceof CacheableSupportsMethodInterface || !$normalizer->hasCacheableSupportsMethod()) {
-                        $this->normalizerCache[$format][$type][$k] = false;
+                        $this->normalizerCache[$format ?? ''][$type][$k] = false;
                     } elseif ($normalizer->supportsNormalization($data, $format, $context)) {
-                        $this->normalizerCache[$format][$type][$k] = true;
+                        $this->normalizerCache[$format ?? ''][$type][$k] = true;
                         break;
                     }
 
@@ -313,7 +313,7 @@ class Serializer implements SerializerInterface, ContextAwareNormalizerInterface
 
                     if (null === $isCacheable) {
                         unset($supportedTypes['*'], $supportedTypes['object']);
-                    } elseif ($this->normalizerCache[$format][$type][$k] = $isCacheable && $normalizer->supportsNormalization($data, $format, $context)) {
+                    } elseif ($this->normalizerCache[$format ?? ''][$type][$k] = $isCacheable && $normalizer->supportsNormalization($data, $format, $context)) {
                         break 2;
                     }
 
@@ -324,13 +324,13 @@ class Serializer implements SerializerInterface, ContextAwareNormalizerInterface
                     continue;
                 }
 
-                if ($this->normalizerCache[$format][$type][$k] ??= $isCacheable && $normalizer->supportsNormalization($data, $format, $context)) {
+                if ($this->normalizerCache[$format ?? ''][$type][$k] ??= $isCacheable && $normalizer->supportsNormalization($data, $format, $context)) {
                     break;
                 }
             }
         }
 
-        foreach ($this->normalizerCache[$format][$type] as $k => $cached) {
+        foreach ($this->normalizerCache[$format ?? ''][$type] as $k => $cached) {
             $normalizer = $this->normalizers[$k];
             if ($cached || $normalizer->supportsNormalization($data, $format, $context)) {
                 return $normalizer;
@@ -350,8 +350,8 @@ class Serializer implements SerializerInterface, ContextAwareNormalizerInterface
      */
     private function getDenormalizer(mixed $data, string $class, ?string $format, array $context): ?DenormalizerInterface
     {
-        if (!isset($this->denormalizerCache[$format][$class])) {
-            $this->denormalizerCache[$format][$class] = [];
+        if (!isset($this->denormalizerCache[$format ?? ''][$class])) {
+            $this->denormalizerCache[$format ?? ''][$class] = [];
             $genericType = class_exists($class) || interface_exists($class, false) ? 'object' : '*';
 
             foreach ($this->normalizers as $k => $normalizer) {
@@ -363,9 +363,9 @@ class Serializer implements SerializerInterface, ContextAwareNormalizerInterface
                     trigger_deprecation('symfony/serializer', '6.3', '"%s" should implement "DenormalizerInterface::getSupportedTypes(?string $format): array".', $normalizer::class);
 
                     if (!$normalizer instanceof CacheableSupportsMethodInterface || !$normalizer->hasCacheableSupportsMethod()) {
-                        $this->denormalizerCache[$format][$class][$k] = false;
+                        $this->denormalizerCache[$format ?? ''][$class][$k] = false;
                     } elseif ($normalizer->supportsDenormalization(null, $class, $format, $context)) {
-                        $this->denormalizerCache[$format][$class][$k] = true;
+                        $this->denormalizerCache[$format ?? ''][$class][$k] = true;
                         break;
                     }
 
@@ -386,7 +386,7 @@ class Serializer implements SerializerInterface, ContextAwareNormalizerInterface
 
                     if (null === $isCacheable) {
                         unset($supportedTypes['*'], $supportedTypes['object']);
-                    } elseif ($this->denormalizerCache[$format][$class][$k] = $isCacheable && $normalizer->supportsDenormalization(null, $class, $format, $context)) {
+                    } elseif ($this->denormalizerCache[$format ?? ''][$class][$k] = $isCacheable && $normalizer->supportsDenormalization(null, $class, $format, $context)) {
                         break 2;
                     }
 
@@ -397,13 +397,13 @@ class Serializer implements SerializerInterface, ContextAwareNormalizerInterface
                     continue;
                 }
 
-                if ($this->denormalizerCache[$format][$class][$k] ??= $isCacheable && $normalizer->supportsDenormalization(null, $class, $format, $context)) {
+                if ($this->denormalizerCache[$format ?? ''][$class][$k] ??= $isCacheable && $normalizer->supportsDenormalization(null, $class, $format, $context)) {
                     break;
                 }
             }
         }
 
-        foreach ($this->denormalizerCache[$format][$class] as $k => $cached) {
+        foreach ($this->denormalizerCache[$format ?? ''][$class] as $k => $cached) {
             $normalizer = $this->normalizers[$k];
             if ($cached || $normalizer->supportsDenormalization($data, $class, $format, $context)) {
                 return $normalizer;
