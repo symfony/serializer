@@ -12,7 +12,6 @@
 namespace Symfony\Component\Serializer\Tests;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\Exception\InvalidTypeException;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
@@ -1761,7 +1760,6 @@ class SerializerTest extends TestCase
         }
     }
 
-    #[RequiresPhp('8.4')]
     public function testDeserializeObjectWithAsymmetricPropertyVisibility()
     {
         $serializer = new Serializer([new ObjectNormalizer()], ['json' => new JsonEncoder()]);
