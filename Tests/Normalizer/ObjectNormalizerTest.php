@@ -15,6 +15,7 @@ use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\Exception\InvalidTypeException;
+use Symfony\Component\PropertyAccess\PropertyAccessorBuilder;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
@@ -963,10 +964,26 @@ class ObjectNormalizerTest extends TestCase
         $this->assertSame([], $normalizer->normalize($class));
     }
 
+    // accessors
+
+    protected function getNormalizerForAccessors($accessorPrefixes = null): ObjectNormalizer
+    {
+        $accessorPrefixes = $accessorPrefixes ?? ReflectionExtractor::$defaultAccessorPrefixes;
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $propertyAccessorBuilder = (new PropertyAccessorBuilder())
+            ->setReadInfoExtractor(
+                new ReflectionExtractor([], $accessorPrefixes, null, false)
+            );
+
+        return new ObjectNormalizer(
+            $classMetadataFactory,
+            propertyAccessor: $propertyAccessorBuilder->getPropertyAccessor(),
+        );
+    }
+
     public function testNormalizeWithMethodNamesSimilarToAccessors()
     {
-        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
-        $normalizer = new ObjectNormalizer($classMetadataFactory);
+        $normalizer = $this->getNormalizerForAccessors();
 
         $object = new ObjectWithAccessorishMethods();
         $normalized = $normalizer->normalize($object);
@@ -981,18 +998,93 @@ class ObjectNormalizerTest extends TestCase
         ], $normalized);
     }
 
-    public function testNormalizeObjectWithBooleanPropertyAndIsserMethodWithSameName()
+    public function testNormalizeObjectWithPublicPropertyAccessorPrecedence()
     {
-        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
-        $normalizer = new ObjectNormalizer($classMetadataFactory);
+        $normalizer = $this->getNormalizerForAccessors();
 
-        $object = new ObjectWithBooleanPropertyAndIsserWithSameName();
+        $object = new ObjectWithPropertyAndAllAccessorMethods(
+            'foo',
+        );
         $normalized = $normalizer->normalize($object);
 
+        // The getter method should take precedence over all other accessor methods
         $this->assertSame([
             'foo' => 'foo',
-            'isFoo' => true,
         ], $normalized);
+    }
+
+    public function testNormalizeObjectWithPropertyAndAccessorMethodsWithSameName()
+    {
+        $normalizer = $this->getNormalizerForAccessors();
+
+        $object = new ObjectWithPropertyAndAccessorSameName(
+            'foo',
+            'getFoo',
+            'canFoo',
+            'hasFoo',
+            'isFoo'
+        );
+        $normalized = $normalizer->normalize($object);
+
+        // Accessor methods with exactly the same name as the property should take precedence
+        $this->assertSame([
+            'getFoo' => 'getFoo',
+            'canFoo' => 'canFoo',
+            'hasFoo' => 'hasFoo',
+            'isFoo' => 'isFoo',
+            // The getFoo accessor method is used for foo, thus it's also 'getFoo' instead of 'foo'
+            'foo' => 'getFoo',
+        ], $normalized);
+
+        $denormalized = $this->normalizer->denormalize($normalized, ObjectWithPropertyAndAccessorSameName::class);
+
+        $this->assertSame('getFoo', $denormalized->getFoo());
+
+        // On the initial object the value was 'foo', but the normalizer prefers the accessor method 'getFoo'
+        // Thus on the denoramilzed object the value is 'getFoo'
+        $this->assertSame('foo', $object->foo);
+        $this->assertSame('getFoo', $denormalized->foo);
+
+        $this->assertSame('hasFoo', $denormalized->hasFoo());
+        $this->assertSame('canFoo', $denormalized->canFoo());
+        $this->assertSame('isFoo', $denormalized->isFoo());
+    }
+
+    /**
+     * Priority of accessor methods is defined by the PropertyReadInfoExtractorInterface passed to the PropertyAccessor
+     * component. By default ReflectionExtractor::$defaultAccessorPrefixes are used.
+     */
+    public function testPrecedenceOfAccessorMethods()
+    {
+        // by default 'is' comes before 'has'
+        $defaultAccessorPrefixNormalizer = $this->getNormalizerForAccessors();
+        $swappedAccessorPrefixNormalizer = $this->getNormalizerForAccessors(['has', 'is']);
+
+        // Nearly equal class, only accessor order is different
+        $isserHasserObject = new ObjectWithPropertyIsserAndHasser('foo');
+        $hasserIsserObject = new ObjectWithPropertyHasserAndIsser('foo');
+
+        // default precedence (is, has)
+        $normalizedDefaultIsserHasser = $defaultAccessorPrefixNormalizer->normalize($isserHasserObject);
+        $normalizedDefaultHasserIsser = $defaultAccessorPrefixNormalizer->normalize($hasserIsserObject);
+
+        $this->assertSame([
+            'foo' => 'isFoo',
+        ], $normalizedDefaultIsserHasser);
+        $this->assertSame([
+            'foo' => 'isFoo',
+        ], $normalizedDefaultHasserIsser);
+
+        // swapped precedence (has, is)
+        $normalizedSwappedIsserHasser = $swappedAccessorPrefixNormalizer->normalize($isserHasserObject);
+        $normalizedSwappedHasserIsser = $swappedAccessorPrefixNormalizer->normalize($hasserIsserObject);
+
+        $this->assertSame([
+            'foo' => 'hasFoo',
+        ], $normalizedSwappedIsserHasser);
+        $this->assertSame([
+            'foo' => 'hasFoo',
+        ], $normalizedSwappedHasserIsser);
     }
 }
 
@@ -1337,18 +1429,98 @@ class ObjectWithAccessorishMethods
     }
 }
 
-class ObjectWithBooleanPropertyAndIsserWithSameName
+class ObjectWithPropertyAndAllAccessorMethods
 {
-    private $foo = 'foo';
-    private $isFoo = true;
+    public function __construct(
+        private $foo,
+    ) {
+    }
+
+    public function canFoo()
+    {
+        return 'canFoo';
+    }
 
     public function getFoo()
     {
         return $this->foo;
     }
 
+    public function hasFoo()
+    {
+        return 'hasFoo';
+    }
+
+    public function isFoo()
+    {
+        return 'isFoo';
+    }
+}
+
+class ObjectWithPropertyAndAccessorSameName
+{
+    public function __construct(
+        public $foo,
+        private $getFoo,
+        private $canFoo = null,
+        private $hasFoo = null,
+        private $isFoo = null,
+    ) {
+    }
+
+    public function getFoo()
+    {
+        return $this->getFoo;
+    }
+
+    public function canFoo()
+    {
+        return $this->canFoo;
+    }
+
+    public function hasFoo()
+    {
+        return $this->hasFoo;
+    }
+
     public function isFoo()
     {
         return $this->isFoo;
+    }
+}
+
+class ObjectWithPropertyHasserAndIsser
+{
+    public function __construct(
+        private $foo,
+    ) {
+    }
+
+    public function hasFoo()
+    {
+        return 'hasFoo';
+    }
+
+    public function isFoo()
+    {
+        return 'isFoo';
+    }
+}
+
+class ObjectWithPropertyIsserAndHasser
+{
+    public function __construct(
+        private $foo,
+    ) {
+    }
+
+    public function isFoo()
+    {
+        return 'isFoo';
+    }
+
+    public function hasFoo()
+    {
+        return 'hasFoo';
     }
 }
