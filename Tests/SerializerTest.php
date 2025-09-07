@@ -1761,7 +1761,7 @@ class SerializerTest extends TestCase
         }
     }
 
-    #[RequiresPhp('8.4')]
+    #[RequiresPhp('>=8.4')]
     public function testDeserializeObjectWithAsymmetricPropertyVisibility()
     {
         $serializer = new Serializer([new ObjectNormalizer()], ['json' => new JsonEncoder()]);

@@ -192,7 +192,7 @@ class PropertyNormalizerTest extends TestCase
         $this->assertSame('childProp', $object->childProp);
     }
 
-    #[RequiresPhp('8.4')]
+    #[RequiresPhp('>=8.4')]
     public function testDenormalizeWithAsymmetricPropertyVisibility()
     {
         /** @var SpecialBookDummy $object */
