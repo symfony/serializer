@@ -29,10 +29,14 @@ interface DenormalizerInterface
     /**
      * Denormalizes data back into an object of the given class.
      *
-     * @param mixed                $data    Data to restore
-     * @param string               $type    The expected class to instantiate
-     * @param string|null          $format  Format the given data was extracted from
-     * @param array<string, mixed> $context Options available to the denormalizer
+     * @template TObject of object
+     *
+     * @param mixed                        $data    Data to restore
+     * @param class-string<TObject>|string $type    The expected class to instantiate
+     * @param string|null                  $format  Format the given data was extracted from
+     * @param array<string, mixed>         $context Options available to the denormalizer
+     *
+     * @return ($type is class-string<TObject> ? TObject : mixed)
      *
      * @throws BadMethodCallException   Occurs when the normalizer is not called in an expected context
      * @throws InvalidArgumentException Occurs when the arguments are not coherent or not supported
