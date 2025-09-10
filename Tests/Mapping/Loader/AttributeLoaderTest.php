@@ -249,15 +249,18 @@ class AttributeLoaderTest extends TestCase
 
     public function testGetMappedClasses()
     {
-        $mappedClasses = ['App\Entity\User', 'App\Entity\Product'];
+        $mappedClasses = [
+            'App\Entity\User' => ['App\Entity\User'],
+            'App\Entity\Product' => ['App\Entity\Product'],
+        ];
         $loader = new AttributeLoader(false, $mappedClasses);
 
-        $this->assertSame($mappedClasses, $loader->getMappedClasses());
+        $this->assertSame(['App\Entity\User', 'App\Entity\Product'], $loader->getMappedClasses());
     }
 
     public function testLoadClassMetadataReturnsFalseForUnmappedClass()
     {
-        $loader = new AttributeLoader(false, ['App\Entity\User']);
+        $loader = new AttributeLoader(false, ['App\Entity\User' => ['App\Entity\User']]);
         $classMetadata = new ClassMetadata('App\Entity\Product');
 
         $this->assertFalse($loader->loadClassMetadata($classMetadata));
@@ -265,15 +268,69 @@ class AttributeLoaderTest extends TestCase
 
     public function testLoadClassMetadataForMappedClassWithAttributes()
     {
-        $loader = new AttributeLoader(false, [GroupDummy::class]);
+        $loader = new AttributeLoader(false, [GroupDummy::class => [GroupDummy::class]]);
         $classMetadata = new ClassMetadata(GroupDummy::class);
 
         $this->assertTrue($loader->loadClassMetadata($classMetadata));
         $this->assertNotEmpty($classMetadata->getAttributesMetadata());
     }
 
+    public function testLoadClassMetadataFromExplicitAttributeMappings()
+    {
+        $targetClass = _AttrMap_Target::class;
+        $sourceClass = _AttrMap_Source::class;
+
+        $loader = new AttributeLoader(false, [$targetClass => [$sourceClass]]);
+        $classMetadata = new ClassMetadata($targetClass);
+
+        $this->assertTrue($loader->loadClassMetadata($classMetadata));
+        $this->assertContains('default', $classMetadata->getAttributesMetadata()['name']->getGroups());
+    }
+
+    public function testLoadClassMetadataWithClassLevelAttributes()
+    {
+        $targetClass = _AttrMap_Target::class;
+        $sourceClass = _AttrMap_ClassLevelSource::class;
+
+        $loader = new AttributeLoader(false, [$targetClass => [$sourceClass]]);
+        $classMetadata = new ClassMetadata($targetClass);
+
+        $this->assertTrue($loader->loadClassMetadata($classMetadata));
+
+        // Check that property attributes are added to the target
+        $this->assertContains('default', $classMetadata->getAttributesMetadata()['name']->getGroups());
+    }
+
     protected function getLoaderForContextMapping(): AttributeLoader
     {
         return $this->loader;
     }
+}
+
+class _AttrMap_Target
+{
+    public string $name;
+
+    public function getName()
+    {
+        return $this->name;
+    }
+}
+
+use Symfony\Component\Serializer\Attribute\ExtendsSerializationFor;
+use Symfony\Component\Serializer\Attribute\Groups;
+
+#[ExtendsSerializationFor(_AttrMap_Target::class)]
+class _AttrMap_Source
+{
+    #[Groups(['default'])]
+    public string $name;
+}
+
+#[ExtendsSerializationFor(_AttrMap_Target::class)]
+#[Groups(['class'])]
+class _AttrMap_ClassLevelSource
+{
+    #[Groups(['default'])]
+    public string $name = '';
 }

@@ -44,8 +44,8 @@ class AttributeLoader implements LoaderInterface
     ];
 
     /**
-     * @param bool|null      $allowAnyClass Null is allowed for BC with Symfony <= 6
-     * @param class-string[] $mappedClasses
+     * @param bool|null                           $allowAnyClass Null is allowed for BC with Symfony <= 6
+     * @param array<class-string, class-string[]> $mappedClasses
      */
     public function __construct(
         private ?bool $allowAnyClass = true,
@@ -59,16 +59,26 @@ class AttributeLoader implements LoaderInterface
      */
     public function getMappedClasses(): array
     {
-        return $this->mappedClasses;
+        return array_keys($this->mappedClasses);
     }
 
     public function loadClassMetadata(ClassMetadataInterface $classMetadata): bool
     {
-        if (!$this->allowAnyClass && !\in_array($classMetadata->getName(), $this->mappedClasses, true)) {
+        if (!$sourceClasses = $this->mappedClasses[$classMetadata->getName()] ??= $this->allowAnyClass ? [$classMetadata->getName()] : []) {
             return false;
         }
 
-        $reflectionClass = $classMetadata->getReflectionClass();
+        $success = false;
+        foreach ($sourceClasses as $sourceClass) {
+            $reflectionClass = $classMetadata->getName() === $sourceClass ? $classMetadata->getReflectionClass() : new \ReflectionClass($sourceClass);
+            $success = $this->doLoadClassMetadata($reflectionClass, $classMetadata) || $success;
+        }
+
+        return $success;
+    }
+
+    public function doLoadClassMetadata(\ReflectionClass $reflectionClass, ClassMetadataInterface $classMetadata): bool
+    {
         $className = $reflectionClass->name;
         $loaded = false;
         $classGroups = [];
