@@ -67,6 +67,7 @@ use Symfony\Component\Serializer\Tests\Fixtures\DummyNullableInt;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyObjectWithEnumConstructor;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyObjectWithEnumProperty;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyWithObjectOrNull;
+use Symfony\Component\Serializer\Tests\Fixtures\DummyWithUnion;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyWithVariadicParameter;
 use Symfony\Component\Serializer\Tests\Fixtures\FalseBuiltInDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\FooImplementationDummy;
@@ -1423,6 +1424,60 @@ class SerializerTest extends TestCase
                 'path' => 'int',
                 'useMessageForUser' => false,
                 'message' => 'The type of the "int" attribute for class "Symfony\Component\Serializer\Tests\Fixtures\WithTypedConstructor" must be one of "int" ("bool" given).',
+            ],
+        ];
+
+        $this->assertSame($expected, $exceptionsAsArray);
+    }
+
+    public function testCollectDenormalizationErrorsWithUnionConstructorTypes()
+    {
+        $json = '{}';
+
+        $serializer = new Serializer(
+            [new ObjectNormalizer()],
+            ['json' => new JsonEncoder()]
+        );
+
+        try {
+            $serializer->deserialize(
+                $json,
+                DummyWithUnion::class,
+                'json',
+                [DenormalizerInterface::COLLECT_DENORMALIZATION_ERRORS => true]
+            );
+
+            $this->fail();
+        } catch (\Throwable $th) {
+            $this->assertInstanceOf(PartialDenormalizationException::class, $th);
+        }
+
+        $exceptionsAsArray = array_map(fn (NotNormalizableValueException $e): array => [
+            'currentType' => $e->getCurrentType(),
+            'expectedTypes' => $e->getExpectedTypes(),
+            'path' => $e->getPath(),
+            'useMessageForUser' => $e->canUseMessageForUser(),
+            'message' => $e->getMessage(),
+        ], $th->getErrors());
+
+        $expected = [
+            [
+                'currentType' => 'null',
+                'expectedTypes' => [
+                    'int', 'float',
+                ],
+                'path' => 'value',
+                'useMessageForUser' => true,
+                'message' => 'Failed to create object because the class misses the "value" property.',
+            ],
+            [
+                'currentType' => 'null',
+                'expectedTypes' => [
+                    'string', 'int',
+                ],
+                'path' => 'value2',
+                'useMessageForUser' => true,
+                'message' => 'Failed to create object because the class misses the "value2" property.',
             ],
         ];
 
