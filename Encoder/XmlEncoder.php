@@ -62,6 +62,7 @@ class XmlEncoder implements EncoderInterface, DecoderInterface, NormalizationAwa
     public const CDATA_WRAPPING_NAME_PATTERN = 'cdata_wrapping_name_pattern';
     public const CDATA_WRAPPING_PATTERN = 'cdata_wrapping_pattern';
     public const IGNORE_EMPTY_ATTRIBUTES = 'ignore_empty_attributes';
+    public const PRESERVE_NUMERIC_KEYS = 'preserve_numeric_keys';
 
     private array $defaultContext = [
         self::AS_COLLECTION => false,
@@ -76,6 +77,7 @@ class XmlEncoder implements EncoderInterface, DecoderInterface, NormalizationAwa
         self::CDATA_WRAPPING_NAME_PATTERN => false,
         self::CDATA_WRAPPING_PATTERN => '/[<>&]/',
         self::IGNORE_EMPTY_ATTRIBUTES => false,
+        self::PRESERVE_NUMERIC_KEYS => false,
     ];
 
     public function __construct(array $defaultContext = [])
@@ -347,6 +349,7 @@ class XmlEncoder implements EncoderInterface, DecoderInterface, NormalizationAwa
     {
         $append = true;
         $removeEmptyTags = $context[self::REMOVE_EMPTY_TAGS] ?? $this->defaultContext[self::REMOVE_EMPTY_TAGS] ?? false;
+        $preserveNumericKeys = $context[self::PRESERVE_NUMERIC_KEYS] ?? $this->defaultContext[self::PRESERVE_NUMERIC_KEYS] ?? false;
         $encoderIgnoredNodeTypes = $context[self::ENCODER_IGNORED_NODE_TYPES] ?? $this->defaultContext[self::ENCODER_IGNORED_NODE_TYPES];
 
         if (\is_array($data) || ($data instanceof \Traversable && (null === $this->serializer || !$this->serializer->supportsNormalization($data, $format)))) {
@@ -373,9 +376,9 @@ class XmlEncoder implements EncoderInterface, DecoderInterface, NormalizationAwa
                     if (!\in_array(\XML_COMMENT_NODE, $encoderIgnoredNodeTypes, true)) {
                         $append = $this->appendComment($parentNode, $data);
                     }
-                } elseif (\is_array($data) && false === is_numeric($key)) {
+                } elseif (\is_array($data) && !is_numeric($key)) {
                     // Is this array fully numeric keys?
-                    if (ctype_digit(implode('', array_keys($data)))) {
+                    if (!$preserveNumericKeys && null === array_find_key($data, static fn ($v, $k) => is_string($k))) {
                         /*
                          * Create nodes to append to $parentNode based on the $key of this array
                          * Produces <xml><item>0</item><item>1</item></xml>

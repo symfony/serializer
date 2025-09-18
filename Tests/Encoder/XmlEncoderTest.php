@@ -1033,4 +1033,48 @@ class XmlEncoderTest extends TestCase
 
         $this->assertEquals($expected, $this->encoder->encode($data, 'xml', ['ignore_empty_attributes' => true]));
     }
+
+    public function testEncodeArrayAsItem()
+    {
+        $expected = <<<'XML'
+            <?xml version="1.0"?>
+            <response><person><item key="0"><firstname>Benjamin</firstname><lastname>Alexandre</lastname></item><item key="1"><firstname>Damien</firstname><lastname>Clay</lastname></item></person></response>
+
+            XML;
+        $source = ['person' => [
+            ['@key' => 0, 'firstname' => 'Benjamin', 'lastname' => 'Alexandre'],
+            ['@key' => 1, 'firstname' => 'Damien', 'lastname' => 'Clay'],
+        ]];
+
+        $this->assertSame($expected, $this->encoder->encode($source, 'xml', [
+            XmlEncoder::PRESERVE_NUMERIC_KEYS => true,
+        ]));
+    }
+
+    public function testDecodeArrayAsItem()
+    {
+        $source = <<<'XML'
+            <?xml version="1.0"?>
+            <response>
+                <person>
+                    <item key="0">
+                        <firstname>Benjamin</firstname>
+                        <lastname>Alexandre</lastname>
+                    </item>
+                    <item key="1">
+                        <firstname>Damien</firstname>
+                        <lastname>Clay</lastname>
+                    </item>
+                </person>
+            </response>
+            XML;
+        $expected = ['person' => [
+            ['@key' => 0, 'firstname' => 'Benjamin', 'lastname' => 'Alexandre', ],
+            ['@key' => 1, 'firstname' => 'Damien', 'lastname' => 'Clay', ],
+        ]];
+
+        $this->assertSame($expected, $this->encoder->decode($source, 'xml', [
+            XmlEncoder::PRESERVE_NUMERIC_KEYS => true,
+        ]));
+    }
 }
