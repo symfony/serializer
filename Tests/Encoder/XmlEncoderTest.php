@@ -1069,12 +1069,24 @@ class XmlEncoderTest extends TestCase
             </response>
             XML;
         $expected = ['person' => [
-            ['@key' => 0, 'firstname' => 'Benjamin', 'lastname' => 'Alexandre', ],
-            ['@key' => 1, 'firstname' => 'Damien', 'lastname' => 'Clay', ],
+            ['@key' => 0, 'firstname' => 'Benjamin', 'lastname' => 'Alexandre'],
+            ['@key' => 1, 'firstname' => 'Damien', 'lastname' => 'Clay'],
         ]];
 
         $this->assertSame($expected, $this->encoder->decode($source, 'xml', [
             XmlEncoder::PRESERVE_NUMERIC_KEYS => true,
         ]));
+    }
+
+    public function testEncodeEmptyArrayWithoutPreservingKeys()
+    {
+        $source = ['person' => []];
+        $expected = <<<'XML'
+            <?xml version="1.0"?>
+            <response><person/></response>
+
+            XML;
+
+        $this->assertSame($expected, $this->encoder->encode($source, 'xml'));
     }
 }
