@@ -22,6 +22,7 @@ use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Serializer\NameConverter\CamelCaseToSnakeCaseNameConverter;
 use Symfony\Component\Serializer\NameConverter\MetadataAwareNameConverter;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -578,6 +579,23 @@ class PropertyNormalizerTest extends TestCase
                 PropertyDummyInterface::class
             )
         );
+    }
+
+    public function testDiscriminatorWithAllowExtraAttributesFalse()
+    {
+        // Discriminator type property should be allowed with allow_extra_attributes=false
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $discriminator = new ClassDiscriminatorFromClassMetadata($classMetadataFactory);
+        $normalizer = new PropertyNormalizer($classMetadataFactory, null, null, $discriminator);
+
+        $obj = $normalizer->denormalize(
+            ['type' => 'one'],
+            PropertyDummyInterface::class,
+            null,
+            [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false]
+        );
+
+        $this->assertInstanceOf(PropertyDiscriminatedDummyOne::class, $obj);
     }
 }
 

@@ -25,6 +25,7 @@ use Symfony\Component\Serializer\Exception\LogicException;
 use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
 use Symfony\Component\Serializer\Exception\RuntimeException;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
+use Symfony\Component\Serializer\Mapping\ClassDiscriminatorFromClassMetadata;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
 use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
@@ -1086,6 +1087,23 @@ class ObjectNormalizerTest extends TestCase
             'foo' => 'hasFoo',
         ], $normalizedSwappedHasserIsser);
     }
+
+    public function testDiscriminatorWithAllowExtraAttributesFalse()
+    {
+        // Discriminator type property should be allowed with allow_extra_attributes=false
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $discriminator = new ClassDiscriminatorFromClassMetadata($classMetadataFactory);
+        $normalizer = new ObjectNormalizer($classMetadataFactory, null, null, null, $discriminator);
+
+        $obj = $normalizer->denormalize(
+            ['type' => 'type_a'],
+            DiscriminatorDummyInterface::class,
+            null,
+            [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false]
+        );
+
+        $this->assertInstanceOf(DiscriminatorDummyTypeA::class, $obj);
+    }
 }
 
 class ProxyObjectDummy extends ObjectDummy
@@ -1427,6 +1445,25 @@ class ObjectWithAccessorishMethods
     {
         $this->accessorishCalled = true;
     }
+}
+
+#[\Symfony\Component\Serializer\Attribute\DiscriminatorMap(
+    typeProperty: 'type',
+    mapping: [
+        'type_a' => DiscriminatorDummyTypeA::class,
+        'type_b' => DiscriminatorDummyTypeB::class,
+    ]
+)]
+interface DiscriminatorDummyInterface
+{
+}
+
+class DiscriminatorDummyTypeA implements DiscriminatorDummyInterface
+{
+}
+
+class DiscriminatorDummyTypeB implements DiscriminatorDummyInterface
+{
 }
 
 class ObjectWithPropertyAndAllAccessorMethods

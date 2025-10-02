@@ -568,6 +568,23 @@ class GetSetMethodNormalizerTest extends TestCase
         $obj = $this->normalizer->denormalize($data, GetSetDummyWithOptionalAndMultipleSetterArgs::class);
         $this->assertSame($expected, $obj->$method());
     }
+
+    public function testDiscriminatorWithAllowExtraAttributesFalse()
+    {
+        // Discriminator type property should be allowed with allow_extra_attributes=false
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $discriminator = new ClassDiscriminatorFromClassMetadata($classMetadataFactory);
+        $normalizer = new GetSetMethodNormalizer($classMetadataFactory, null, null, $discriminator);
+
+        $obj = $normalizer->denormalize(
+            ['type' => 'one'],
+            GetSetMethodDummyInterface::class,
+            null,
+            [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false]
+        );
+
+        $this->assertInstanceOf(GetSetMethodDiscriminatedDummyOne::class, $obj);
+    }
 }
 
 class GetSetDummy
