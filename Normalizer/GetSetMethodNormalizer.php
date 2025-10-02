@@ -169,6 +169,10 @@ final class GetSetMethodNormalizer extends AbstractObjectNormalizer
 
         $class = \is_object($classOrObject) ? $classOrObject::class : $classOrObject;
 
+        if ($this->classDiscriminatorResolver?->getMappingForMappedObject($classOrObject)?->getTypeProperty() === $attribute) {
+            return true;
+        }
+
         if (!isset(self::$reflectionCache[$class])) {
             self::$reflectionCache[$class] = new \ReflectionClass($class);
         }
