@@ -1017,13 +1017,63 @@ class ObjectNormalizerTest extends TestCase
         $this->assertSame('getFoo', $denormalized->getFoo());
 
         // On the initial object the value was 'foo', but the normalizer prefers the accessor method 'getFoo'
-        // Thus on the denoramilzed object the value is 'getFoo'
+        // Thus on the denormalized object the value is 'getFoo'
         $this->assertSame('foo', $object->foo);
         $this->assertSame('getFoo', $denormalized->foo);
 
         $this->assertSame('hasFoo', $denormalized->hasFoo());
         $this->assertSame('canFoo', $denormalized->canFoo());
         $this->assertSame('isFoo', $denormalized->isFoo());
+    }
+
+    public function testNormalizeChildExtendsObjectWithPropertyAndAccessorSameName()
+    {
+        // This test follows the same logic used in testNormalizeObjectWithPropertyAndAccessorMethodsWithSameName()
+        $normalizer = $this->getNormalizerForAccessors();
+
+        $object = new ChildExtendsObjectWithPropertyAndAccessorSameName(
+            'foo',
+            'getFoo',
+            'canFoo',
+            'hasFoo',
+            'isFoo'
+        );
+        $normalized = $normalizer->normalize($object);
+
+        $this->assertSame([
+            'getFoo' => 'getFoo',
+            'canFoo' => 'canFoo',
+            'hasFoo' => 'hasFoo',
+            'isFoo' => 'isFoo',
+            // The getFoo accessor method is used for foo, thus it's also 'getFoo' instead of 'foo'
+            'foo' => 'getFoo',
+        ], $normalized);
+
+        $denormalized = $this->normalizer->denormalize($normalized, ChildExtendsObjectWithPropertyAndAccessorSameName::class);
+
+        $this->assertSame('getFoo', $denormalized->getFoo());
+
+        // On the initial object the value was 'foo', but the normalizer prefers the accessor method 'getFoo'
+        // Thus on the denormalized object the value is 'getFoo'
+        $this->assertSame('foo', $object->foo);
+        $this->assertSame('getFoo', $denormalized->foo);
+
+        $this->assertSame('hasFoo', $denormalized->hasFoo());
+        $this->assertSame('canFoo', $denormalized->canFoo());
+        $this->assertSame('isFoo', $denormalized->isFoo());
+    }
+
+    public function testNormalizeChildWithPropertySameAsParentMethod()
+    {
+        $normalizer = $this->getNormalizerForAccessors();
+
+        $object = new ChildWithPropertySameAsParentMethod('foo');
+        $normalized = $normalizer->normalize($object);
+
+        $this->assertSame([
+            'foo' => 'foo',
+        ],
+            $normalized);
     }
 
     /**
@@ -1499,6 +1549,18 @@ class ObjectWithPropertyAndAccessorSameName
     {
         return $this->isFoo;
     }
+}
+
+class ChildExtendsObjectWithPropertyAndAccessorSameName extends ObjectWithPropertyAndAccessorSameName
+{
+}
+
+class ChildWithPropertySameAsParentMethod extends ObjectWithPropertyAndAllAccessorMethods
+{
+    private $canFoo;
+    private $getFoo;
+    private $hasFoo;
+    private $isFoo;
 }
 
 class ObjectWithPropertyHasserAndIsser
