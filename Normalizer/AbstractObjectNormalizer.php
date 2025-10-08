@@ -611,6 +611,8 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
                 if (!$isUnionType && !$isNullable) {
                     throw $e;
                 }
+
+                $expectedTypes[LegacyType::BUILTIN_TYPE_OBJECT === $builtinType && $class ? $class : $builtinType] = true;
             } catch (ExtraAttributesException $e) {
                 if (!$isUnionType && !$isNullable) {
                     throw $e;
@@ -901,6 +903,8 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
                 if (!$type instanceof UnionType) {
                     throw $e;
                 }
+
+                $expectedTypes[TypeIdentifier::OBJECT === $typeIdentifier && $class ? $class : $typeIdentifier->value] = true;
             } catch (ExtraAttributesException $e) {
                 if (!$type instanceof UnionType) {
                     throw $e;
