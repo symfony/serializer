@@ -312,6 +312,15 @@ class CsvEncoderTest extends TestCase
 
         $this->assertSame(<<<'CSV'
             0
+            "'
+            line feed"
+
+            CSV,
+            $this->encoder->encode(["\nline feed"], 'csv')
+        );
+
+        $this->assertSame(<<<'CSV'
+            0
             "'=1+2"";=1+2"
 
             CSV,
@@ -434,6 +443,17 @@ class CsvEncoderTest extends TestCase
 
             CSV,
             $this->encoder->encode(["\ttab"], 'csv', [
+                CsvEncoder::ESCAPE_FORMULAS_KEY => true,
+            ])
+        );
+
+        $this->assertSame(<<<'CSV'
+            0
+            "'
+            line feed"
+
+            CSV,
+            $this->encoder->encode(["\nline feed"], 'csv', [
                 CsvEncoder::ESCAPE_FORMULAS_KEY => true,
             ])
         );
