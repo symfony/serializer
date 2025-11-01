@@ -299,6 +299,59 @@ class DateTimeNormalizerTest extends TestCase
         ];
     }
 
+    public function testDenormalizeUsingPreserveContextTimezoneAndFormatPassedInConstructor()
+    {
+        $normalizer = new DateTimeNormalizer(
+            [
+                DateTimeNormalizer::TIMEZONE_KEY => new \DateTimeZone('Japan'),
+                DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\\TH:i:sO',
+                DateTimeNormalizer::FORCE_TIMEZONE_KEY => true,
+            ]
+        );
+        $actual = $normalizer->denormalize('2016-12-01T12:34:56+0000', \DateTimeInterface::class);
+        $this->assertEquals(new \DateTimeZone('Japan'), $actual->getTimezone());
+    }
+
+    public function testDenormalizeUsingPreserveContextTimezoneAndFormatPassedInContext()
+    {
+        $actual = $this->normalizer->denormalize(
+            '2016-12-01T12:34:56+0000',
+            \DateTimeInterface::class,
+            null,
+            [
+                DateTimeNormalizer::TIMEZONE_KEY => new \DateTimeZone('Japan'),
+                DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\\TH:i:sO',
+                DateTimeNormalizer::FORCE_TIMEZONE_KEY => true,
+            ]
+        );
+        $this->assertEquals(new \DateTimeZone('Japan'), $actual->getTimezone());
+    }
+
+    public function testDenormalizeUsingPreserveContextTimezoneWithoutFormat()
+    {
+        $actual = $this->normalizer->denormalize(
+            '2016-12-01T12:34:56+0000',
+            \DateTimeInterface::class,
+            null,
+            [
+                DateTimeNormalizer::TIMEZONE_KEY => new \DateTimeZone('Japan'),
+                DateTimeNormalizer::FORCE_TIMEZONE_KEY => true,
+            ]
+        );
+        $this->assertEquals(new \DateTimeZone('Japan'), $actual->getTimezone());
+    }
+
+    public function testDenormalizeUsingPreserveContextShouldBeIgnoredWithoutTimezoneInContext()
+    {
+        $actual = $this->normalizer->denormalize(
+            '2016-12-01T12:34:56+0000',
+            \DateTimeInterface::class,
+            null,
+            [DateTimeNormalizer::FORCE_TIMEZONE_KEY => true]
+        );
+        $this->assertEquals(new \DateTimeZone('+00:00'), $actual->getTimezone());
+    }
+
     public function testDenormalizeInvalidDataThrowsException()
     {
         $this->expectException(UnexpectedValueException::class);
