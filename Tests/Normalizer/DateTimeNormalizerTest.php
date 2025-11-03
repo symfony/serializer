@@ -303,13 +303,13 @@ class DateTimeNormalizerTest extends TestCase
     {
         $normalizer = new DateTimeNormalizer(
             [
-                DateTimeNormalizer::TIMEZONE_KEY => new \DateTimeZone('Japan'),
+                DateTimeNormalizer::TIMEZONE_KEY => new \DateTimeZone('Asia/Tokyo'),
                 DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\\TH:i:sO',
                 DateTimeNormalizer::FORCE_TIMEZONE_KEY => true,
             ]
         );
         $actual = $normalizer->denormalize('2016-12-01T12:34:56+0000', \DateTimeInterface::class);
-        $this->assertEquals(new \DateTimeZone('Japan'), $actual->getTimezone());
+        $this->assertEquals(new \DateTimeZone('Asia/Tokyo'), $actual->getTimezone());
     }
 
     public function testDenormalizeUsingPreserveContextTimezoneAndFormatPassedInContext()
@@ -319,12 +319,12 @@ class DateTimeNormalizerTest extends TestCase
             \DateTimeInterface::class,
             null,
             [
-                DateTimeNormalizer::TIMEZONE_KEY => new \DateTimeZone('Japan'),
+                DateTimeNormalizer::TIMEZONE_KEY => new \DateTimeZone('Asia/Tokyo'),
                 DateTimeNormalizer::FORMAT_KEY => 'Y-m-d\\TH:i:sO',
                 DateTimeNormalizer::FORCE_TIMEZONE_KEY => true,
             ]
         );
-        $this->assertEquals(new \DateTimeZone('Japan'), $actual->getTimezone());
+        $this->assertEquals(new \DateTimeZone('Asia/Tokyo'), $actual->getTimezone());
     }
 
     public function testDenormalizeUsingPreserveContextTimezoneWithoutFormat()
@@ -334,11 +334,11 @@ class DateTimeNormalizerTest extends TestCase
             \DateTimeInterface::class,
             null,
             [
-                DateTimeNormalizer::TIMEZONE_KEY => new \DateTimeZone('Japan'),
+                DateTimeNormalizer::TIMEZONE_KEY => new \DateTimeZone('Asia/Tokyo'),
                 DateTimeNormalizer::FORCE_TIMEZONE_KEY => true,
             ]
         );
-        $this->assertEquals(new \DateTimeZone('Japan'), $actual->getTimezone());
+        $this->assertEquals(new \DateTimeZone('Asia/Tokyo'), $actual->getTimezone());
     }
 
     public function testDenormalizeUsingPreserveContextShouldBeIgnoredWithoutTimezoneInContext()
