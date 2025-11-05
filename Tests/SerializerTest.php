@@ -15,6 +15,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccessor;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
+use Symfony\Component\PropertyInfo\Extractor\SerializerExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -1794,6 +1795,38 @@ class SerializerTest extends TestCase
         $this->assertSame('one', $object->item);
         $this->assertSame('final', $object->type); // Value set in the constructor; must not be changed during deserialization
     }
+
+    public function testPartialDenormalizationWithInvalidEnumAndAllowInvalid()
+    {
+        $factory = new ClassMetadataFactory(new AttributeLoader());
+        $extractor = new PropertyInfoExtractor(
+            [new SerializerExtractor($factory)],
+            [new ReflectionExtractor()]
+        );
+        $serializer = new Serializer(
+            [
+                new ArrayDenormalizer(),
+                new BackedEnumNormalizer(),
+                new ObjectNormalizer($factory, null, null, $extractor),
+            ],
+        );
+
+        $context = [
+            'collect_denormalization_errors' => true,
+            'allow_invalid_values' => true,
+        ];
+
+        try {
+            $serializer->denormalize(['id' => 123, 'status' => null], SerializerTestRequestDto::class, null, $context);
+            $this->fail('PartialDenormalizationException was not thrown.');
+        } catch (PartialDenormalizationException $exception) {
+            $this->assertCount(1, $exception->getErrors());
+            $error = $exception->getErrors()[0];
+
+            $this->assertSame('status', $error->getPath());
+            $this->assertSame(['int', 'string'], $error->getExpectedTypes());
+        }
+    }
 }
 
 class Model
@@ -1968,4 +2001,19 @@ interface NormalizerAwareNormalizer extends NormalizerInterface, NormalizerAware
 
 interface DenormalizerAwareDenormalizer extends DenormalizerInterface, DenormalizerAwareInterface
 {
+}
+
+enum SerializerTestBackedEnum: string
+{
+    case PENDING = 'pending';
+    case ACTIVE = 'active';
+}
+
+class SerializerTestRequestDto
+{
+    public function __construct(
+        public int $id,
+        public SerializerTestBackedEnum $status,
+    ) {
+    }
 }
