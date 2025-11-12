@@ -212,12 +212,11 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
         foreach ($stack as $attribute => $attributeValue) {
             $attributeContext = $this->getAttributeNormalizationContext($data, $attribute, $context);
 
-            if (null === $attributeValue || \is_scalar($attributeValue)) {
-                $normalizedData = $this->updateData($normalizedData, $attribute, $attributeValue, $class, $format, $attributeContext, $attributesMetadata, $classMetadata);
-                continue;
-            }
-
             if (!$this->serializer instanceof NormalizerInterface) {
+                if (null === $attributeValue || \is_scalar($attributeValue)) {
+                    $normalizedData = $this->updateData($normalizedData, $attribute, $attributeValue, $class, $format, $attributeContext, $attributesMetadata, $classMetadata);
+                    continue;
+                }
                 throw new LogicException(\sprintf('Cannot normalize attribute "%s" because the injected serializer is not a normalizer.', $attribute));
             }
 

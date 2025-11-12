@@ -12,7 +12,6 @@
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\Exception\InvalidTypeException;
 use Symfony\Component\PropertyAccess\PropertyAccessorBuilder;
@@ -49,6 +48,7 @@ use Symfony\Component\Serializer\Tests\Fixtures\Php74Dummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Php74DummyPrivate;
 use Symfony\Component\Serializer\Tests\Fixtures\Php80Dummy;
 use Symfony\Component\Serializer\Tests\Fixtures\SiblingHolder;
+use Symfony\Component\Serializer\Tests\Fixtures\StdClassNormalizer;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\AttributesTestTrait;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\CacheableObjectAttributesTestTrait;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\CallbacksTestTrait;
@@ -89,7 +89,7 @@ class ObjectNormalizerTest extends TestCase
     use TypeEnforcementTestTrait;
 
     private ObjectNormalizer $normalizer;
-    private SerializerInterface&NormalizerInterface&MockObject $serializer;
+    private SerializerInterface&NormalizerInterface $serializer;
 
     protected function setUp(): void
     {
@@ -98,8 +98,8 @@ class ObjectNormalizerTest extends TestCase
 
     private function createNormalizer(array $defaultContext = [], ?ClassMetadataFactoryInterface $classMetadataFactory = null): void
     {
-        $this->serializer = $this->createMock(ObjectSerializerNormalizer::class);
         $this->normalizer = new ObjectNormalizer($classMetadataFactory, null, null, null, null, null, $defaultContext);
+        $this->serializer = new Serializer([new StdClassNormalizer(), $this->normalizer]);
         $this->normalizer->setSerializer($this->serializer);
     }
 
@@ -114,13 +114,6 @@ class ObjectNormalizerTest extends TestCase
         $obj->setObject($object);
         $obj->setGo(true);
 
-        $this->serializer
-            ->expects($this->once())
-            ->method('normalize')
-            ->with($object, 'any')
-            ->willReturn('string_object')
-        ;
-
         $this->assertEquals(
             [
                 'foo' => 'foo',
@@ -129,6 +122,32 @@ class ObjectNormalizerTest extends TestCase
                 'fooBar' => 'foobar',
                 'camelCase' => 'camelcase',
                 'object' => 'string_object',
+                'go' => true,
+            ],
+            $this->normalizer->normalize($obj, 'any')
+        );
+    }
+
+    public function testNormalizeWithoutSerializer()
+    {
+        $obj = new ObjectDummy();
+        $obj->setFoo('foo');
+        $obj->bar = 'bar';
+        $obj->setBaz(true);
+        $obj->setCamelCase('camelcase');
+        $obj->setObject(null);
+        $obj->setGo(true);
+
+        $this->normalizer = new ObjectNormalizer();
+
+        $this->assertEquals(
+            [
+                'foo' => 'foo',
+                'bar' => 'bar',
+                'baz' => true,
+                'fooBar' => 'foobar',
+                'camelCase' => 'camelcase',
+                'object' => null,
                 'go' => true,
             ],
             $this->normalizer->normalize($obj, 'any')
@@ -987,7 +1006,7 @@ class ObjectNormalizerTest extends TestCase
 
     protected function getNormalizerForAccessors($accessorPrefixes = null): ObjectNormalizer
     {
-        $accessorPrefixes = $accessorPrefixes ?? ReflectionExtractor::$defaultAccessorPrefixes;
+        $accessorPrefixes ??= ReflectionExtractor::$defaultAccessorPrefixes;
         $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
         $propertyAccessorBuilder = (new PropertyAccessorBuilder())
             ->setReadInfoExtractor(
@@ -1060,13 +1079,63 @@ class ObjectNormalizerTest extends TestCase
         $this->assertSame('getFoo', $denormalized->getFoo());
 
         // On the initial object the value was 'foo', but the normalizer prefers the accessor method 'getFoo'
-        // Thus on the denoramilzed object the value is 'getFoo'
+        // Thus on the denormalized object the value is 'getFoo'
         $this->assertSame('foo', $object->foo);
         $this->assertSame('getFoo', $denormalized->foo);
 
         $this->assertSame('hasFoo', $denormalized->hasFoo());
         $this->assertSame('canFoo', $denormalized->canFoo());
         $this->assertSame('isFoo', $denormalized->isFoo());
+    }
+
+    public function testNormalizeChildExtendsObjectWithPropertyAndAccessorSameName()
+    {
+        // This test follows the same logic used in testNormalizeObjectWithPropertyAndAccessorMethodsWithSameName()
+        $normalizer = $this->getNormalizerForAccessors();
+
+        $object = new ChildExtendsObjectWithPropertyAndAccessorSameName(
+            'foo',
+            'getFoo',
+            'canFoo',
+            'hasFoo',
+            'isFoo'
+        );
+        $normalized = $normalizer->normalize($object);
+
+        $this->assertSame([
+            'getFoo' => 'getFoo',
+            'canFoo' => 'canFoo',
+            'hasFoo' => 'hasFoo',
+            'isFoo' => 'isFoo',
+            // The getFoo accessor method is used for foo, thus it's also 'getFoo' instead of 'foo'
+            'foo' => 'getFoo',
+        ], $normalized);
+
+        $denormalized = $this->normalizer->denormalize($normalized, ChildExtendsObjectWithPropertyAndAccessorSameName::class);
+
+        $this->assertSame('getFoo', $denormalized->getFoo());
+
+        // On the initial object the value was 'foo', but the normalizer prefers the accessor method 'getFoo'
+        // Thus on the denormalized object the value is 'getFoo'
+        $this->assertSame('foo', $object->foo);
+        $this->assertSame('getFoo', $denormalized->foo);
+
+        $this->assertSame('hasFoo', $denormalized->hasFoo());
+        $this->assertSame('canFoo', $denormalized->canFoo());
+        $this->assertSame('isFoo', $denormalized->isFoo());
+    }
+
+    public function testNormalizeChildWithPropertySameAsParentMethod()
+    {
+        $normalizer = $this->getNormalizerForAccessors();
+
+        $object = new ChildWithPropertySameAsParentMethod('foo');
+        $normalized = $normalizer->normalize($object);
+
+        $this->assertSame([
+            'foo' => 'foo',
+        ],
+            $normalized);
     }
 
     /**
@@ -1542,6 +1611,18 @@ class ObjectWithPropertyAndAccessorSameName
     {
         return $this->isFoo;
     }
+}
+
+class ChildExtendsObjectWithPropertyAndAccessorSameName extends ObjectWithPropertyAndAccessorSameName
+{
+}
+
+class ChildWithPropertySameAsParentMethod extends ObjectWithPropertyAndAllAccessorMethods
+{
+    private $canFoo;
+    private $getFoo;
+    private $hasFoo;
+    private $isFoo;
 }
 
 class ObjectWithPropertyHasserAndIsser
