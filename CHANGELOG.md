@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+8.1
+---
+
+ * Improve `NotNormalizableValueException` exception messages in `BackedEnumNormalizer` to contain more useful information
+
 8.0
 ---
 
