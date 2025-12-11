@@ -954,6 +954,26 @@ XML;
         $this->assertEquals($expected, $encoder->encode($data, 'xml'));
     }
 
+    public function testEncodeNan()
+    {
+        $value = \NAN;
+
+        $expected = '<?xml version="1.0"?>'."\n".
+            '<response>NAN</response>'."\n";
+
+        $this->assertEquals($expected, $this->encoder->encode($value, 'xml'));
+    }
+
+    public function testEncodeInfinite()
+    {
+        $value = \INF;
+
+        $expected = '<?xml version="1.0"?>'."\n".
+            '<response>INF</response>'."\n";
+
+        $this->assertEquals($expected, $this->encoder->encode($value, 'xml'));
+    }
+
     private function createXmlEncoderWithEnvelopeNormalizer(): XmlEncoder
     {
         $normalizers = [
