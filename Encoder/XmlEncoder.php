@@ -480,7 +480,7 @@ class XmlEncoder implements EncoderInterface, DecoderInterface, NormalizationAwa
 
             return $this->selectNodeType($node, $this->serializer->normalize($val, $format, $context), $format, $context);
         } elseif (is_numeric($val)) {
-            return $this->appendText($node, (string) $val);
+            return $this->appendText($node, is_nan($val) ? 'NAN' : (string) $val);
         } elseif (\is_string($val) && $this->needsCdataWrapping($node->nodeName, $val, $context)) {
             return $this->appendCData($node, $val);
         } elseif (\is_string($val)) {
