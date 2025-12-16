@@ -177,7 +177,7 @@ class SerializerTest extends TestCase
         $normalizer1 = $this->createMock(NormalizerInterface::class);
         $normalizer1->method('getSupportedTypes')->willReturn(['*' => false]);
         $normalizer1->method('supportsNormalization')
-            ->willReturnCallback(fn ($data, $format) => isset($data->test));
+            ->willReturnCallback(static fn ($data, $format) => isset($data->test));
         $normalizer1->method('normalize')->willReturn('test1');
 
         $normalizer2 = $this->createMock(NormalizerInterface::class);
@@ -200,7 +200,7 @@ class SerializerTest extends TestCase
         $denormalizer1 = $this->createMock(DenormalizerInterface::class);
         $denormalizer1->method('getSupportedTypes')->willReturn(['*' => false]);
         $denormalizer1->method('supportsDenormalization')
-            ->willReturnCallback(fn ($data, $type, $format) => isset($data['test1']));
+            ->willReturnCallback(static fn ($data, $type, $format) => isset($data['test1']));
         $denormalizer1->method('denormalize')->willReturn('test1');
 
         $denormalizer2 = $this->createMock(DenormalizerInterface::class);
@@ -991,7 +991,7 @@ class SerializerTest extends TestCase
 
         $this->assertInstanceOf(Php74Full::class, $th->getData());
 
-        $exceptionsAsArray = array_map(fn (NotNormalizableValueException $e): array => [
+        $exceptionsAsArray = array_map(static fn (NotNormalizableValueException $e): array => [
             'currentType' => $e->getCurrentType(),
             'expectedTypes' => $e->getExpectedTypes(),
             'path' => $e->getPath(),
@@ -1203,7 +1203,7 @@ class SerializerTest extends TestCase
         $this->assertInstanceOf(Php74Full::class, $th->getData()[0]);
         $this->assertInstanceOf(Php74Full::class, $th->getData()[1]);
 
-        $exceptionsAsArray = array_map(fn (NotNormalizableValueException $e): array => [
+        $exceptionsAsArray = array_map(static fn (NotNormalizableValueException $e): array => [
             'currentType' => $e->getCurrentType(),
             'expectedTypes' => $e->getExpectedTypes(),
             'path' => $e->getPath(),
@@ -1258,7 +1258,7 @@ class SerializerTest extends TestCase
 
         $this->assertInstanceOf(Php74Full::class, $th->getData());
 
-        $exceptionsAsArray = array_map(fn (NotNormalizableValueException $e): array => [
+        $exceptionsAsArray = array_map(static fn (NotNormalizableValueException $e): array => [
             'currentType' => $e->getCurrentType(),
             'expectedTypes' => $e->getExpectedTypes(),
             'path' => $e->getPath(),
@@ -1325,7 +1325,7 @@ class SerializerTest extends TestCase
 
         $this->assertInstanceOf(Php80WithPromotedTypedConstructor::class, $th->getData());
 
-        $exceptionsAsArray = array_map(fn (NotNormalizableValueException $e): array => [
+        $exceptionsAsArray = array_map(static fn (NotNormalizableValueException $e): array => [
             'currentType' => $e->getCurrentType(),
             'expectedTypes' => $e->getExpectedTypes(),
             'path' => $e->getPath(),
@@ -1393,7 +1393,7 @@ class SerializerTest extends TestCase
         $this->assertTrue($object->bool);
         $this->assertSame(1, $object->int);
 
-        $exceptionsAsArray = array_map(function (NotNormalizableValueException $e): array {
+        $exceptionsAsArray = array_map(static function (NotNormalizableValueException $e): array {
             return [
                 'currentType' => $e->getCurrentType(),
                 'expectedTypes' => $e->getExpectedTypes(),
@@ -1449,7 +1449,7 @@ class SerializerTest extends TestCase
             $this->assertInstanceOf(PartialDenormalizationException::class, $th);
         }
 
-        $exceptionsAsArray = array_map(fn (NotNormalizableValueException $e): array => [
+        $exceptionsAsArray = array_map(static fn (NotNormalizableValueException $e): array => [
             'currentType' => $e->getCurrentType(),
             'expectedTypes' => $e->getExpectedTypes(),
             'path' => $e->getPath(),
@@ -1499,7 +1499,7 @@ class SerializerTest extends TestCase
             $this->assertInstanceOf(PartialDenormalizationException::class, $th);
         }
 
-        $exceptionsAsArray = array_map(fn (NotNormalizableValueException $e): array => [
+        $exceptionsAsArray = array_map(static fn (NotNormalizableValueException $e): array => [
             'currentType' => $e->getCurrentType(),
             'useMessageForUser' => $e->canUseMessageForUser(),
             'message' => $e->getMessage(),
@@ -1538,7 +1538,7 @@ class SerializerTest extends TestCase
             $this->assertInstanceOf(PartialDenormalizationException::class, $e);
         }
 
-        $exceptionsAsArray = array_map(function (NotNormalizableValueException $e): array {
+        $exceptionsAsArray = array_map(static function (NotNormalizableValueException $e): array {
             return [
                 'currentType' => $e->getCurrentType(),
                 'useMessageForUser' => $e->canUseMessageForUser(),
@@ -1704,7 +1704,7 @@ class SerializerTest extends TestCase
         $this->assertFalse(isset($object->two));
         $this->assertSame('three string', $object->three);
 
-        $exceptionsAsArray = array_map(function (NotNormalizableValueException $e): array {
+        $exceptionsAsArray = array_map(static function (NotNormalizableValueException $e): array {
             return [
                 'currentType' => $e->getCurrentType(),
                 'expectedTypes' => $e->getExpectedTypes(),
@@ -1785,7 +1785,7 @@ class SerializerTest extends TestCase
             $this->assertIsArray($e->getErrors());
             $this->assertCount(2, $e->getErrors(), 'Expected two denormalization errors');
 
-            $exceptionsAsArray = array_map(function (NotNormalizableValueException $ex): array {
+            $exceptionsAsArray = array_map(static function (NotNormalizableValueException $ex): array {
                 return [
                     'currentType' => $ex->getCurrentType(),
                     'expectedTypes' => $ex->getExpectedTypes(),
