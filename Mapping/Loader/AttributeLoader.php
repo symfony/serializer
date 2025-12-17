@@ -123,14 +123,30 @@ class AttributeLoader implements LoaderInterface
             if ($method->getDeclaringClass()->name !== $className) {
                 continue;
             }
+            $name = $method->name;
 
-            if (0 === stripos($method->name, 'get') && $method->getNumberOfRequiredParameters()) {
+            if (0 === stripos($name, 'get') && $method->getNumberOfRequiredParameters()) {
                 continue; /*  matches the BC behavior in `Symfony\Component\Serializer\Normalizer\ObjectNormalizer::extractAttributes` */
             }
 
-            $accessorOrMutator = preg_match('/^(get|is|has|set)(.+)$/i', $method->name, $matches);
-            if ($accessorOrMutator && !ctype_lower($matches[2][0])) {
-                $attributeName = lcfirst($matches[2]);
+            $accessorOrMutator = match ($name[0]) {
+                's' => str_starts_with($name, 'set') && isset($name[$i = 3]),
+                'g' => str_starts_with($name, 'get') && isset($name[$i = 3]),
+                'h' => str_starts_with($name, 'has') && isset($name[$i = 3]),
+                'c' => str_starts_with($name, 'can') && isset($name[$i = 3]),
+                'i' => str_starts_with($name, 'is') && isset($name[$i = 2]),
+                default => false,
+            };
+            if ($accessorOrMutator && !ctype_lower($name[$i])) {
+                if ($this->hasProperty($method->getDeclaringClass(), $name)) {
+                    $attributeName = $name;
+                } else {
+                    $attributeName = substr($name, $i);
+
+                    if (!$reflectionClass->hasProperty($attributeName)) {
+                        $attributeName = lcfirst($attributeName);
+                    }
+                }
 
                 if (isset($attributesMetadata[$attributeName])) {
                     $attributeMetadata = $attributesMetadata[$attributeName];
@@ -143,7 +159,7 @@ class AttributeLoader implements LoaderInterface
             foreach ($this->loadAttributes($method) as $annotation) {
                 if ($annotation instanceof Groups) {
                     if (!$accessorOrMutator) {
-                        throw new MappingException(\sprintf('Groups on "%s::%s()" cannot be added. Groups can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
+                        throw new MappingException(\sprintf('Groups on "%s::%s()" cannot be added. Groups can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
                     }
 
                     foreach ($annotation->getGroups() as $group) {
@@ -151,19 +167,19 @@ class AttributeLoader implements LoaderInterface
                     }
                 } elseif ($annotation instanceof MaxDepth) {
                     if (!$accessorOrMutator) {
-                        throw new MappingException(\sprintf('MaxDepth on "%s::%s()" cannot be added. MaxDepth can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
+                        throw new MappingException(\sprintf('MaxDepth on "%s::%s()" cannot be added. MaxDepth can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
                     }
 
                     $attributeMetadata->setMaxDepth($annotation->getMaxDepth());
                 } elseif ($annotation instanceof SerializedName) {
                     if (!$accessorOrMutator) {
-                        throw new MappingException(\sprintf('SerializedName on "%s::%s()" cannot be added. SerializedName can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
+                        throw new MappingException(\sprintf('SerializedName on "%s::%s()" cannot be added. SerializedName can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
                     }
 
                     $attributeMetadata->setSerializedName($annotation->getSerializedName());
                 } elseif ($annotation instanceof SerializedPath) {
                     if (!$accessorOrMutator) {
-                        throw new MappingException(\sprintf('SerializedPath on "%s::%s()" cannot be added. SerializedPath can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
+                        throw new MappingException(\sprintf('SerializedPath on "%s::%s()" cannot be added. SerializedPath can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
                     }
 
                     $attributeMetadata->setSerializedPath($annotation->getSerializedPath());
@@ -173,7 +189,7 @@ class AttributeLoader implements LoaderInterface
                     }
                 } elseif ($annotation instanceof Context) {
                     if (!$accessorOrMutator) {
-                        throw new MappingException(\sprintf('Context on "%s::%s()" cannot be added. Context can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
+                        throw new MappingException(\sprintf('Context on "%s::%s()" cannot be added. Context can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
                     }
 
                     $this->setAttributeContextsForGroups($annotation, $attributeMetadata);
@@ -256,6 +272,17 @@ class AttributeLoader implements LoaderInterface
                 return true;
             }
         }
+
+        return false;
+    }
+
+    private function hasProperty(\ReflectionClass $class, string $propName): bool
+    {
+        do {
+            if ($class->hasProperty($propName)) {
+                return true;
+            }
+        } while ($class = $class->getParentClass());
 
         return false;
     }
