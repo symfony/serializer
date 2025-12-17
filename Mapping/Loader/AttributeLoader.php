@@ -100,7 +100,7 @@ class AttributeLoader implements LoaderInterface
             }
 
             $attributeMetadata = $attributesMetadata[$property->name];
-            if ($property->getDeclaringClass()->name === $className) {
+            if ($property->class === $className) {
                 if ($classContextAttribute) {
                     $this->setAttributeContextsForGroups($classContextAttribute, $attributeMetadata);
                 }
@@ -133,7 +133,7 @@ class AttributeLoader implements LoaderInterface
         }
 
         foreach ($reflectionClass->getMethods() as $method) {
-            if ($method->getDeclaringClass()->name !== $className) {
+            if ($method->class !== $className) {
                 continue;
             }
 
@@ -211,8 +211,8 @@ class AttributeLoader implements LoaderInterface
                     }
                     $on = match (true) {
                         $reflector instanceof \ReflectionClass => ' on class '.$reflector->name,
-                        $reflector instanceof \ReflectionMethod => \sprintf(' on "%s::%s()"', $reflector->getDeclaringClass()->name, $reflector->name),
-                        $reflector instanceof \ReflectionProperty => \sprintf(' on "%s::$%s"', $reflector->getDeclaringClass()->name, $reflector->name),
+                        $reflector instanceof \ReflectionMethod => \sprintf(' on "%s::%s()"', $reflector->class, $reflector->name),
+                        $reflector instanceof \ReflectionProperty => \sprintf(' on "%s::$%s"', $reflector->class, $reflector->name),
                         default => '',
                     };
 
