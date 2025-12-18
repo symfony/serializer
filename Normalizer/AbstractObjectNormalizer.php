@@ -13,6 +13,7 @@ namespace Symfony\Component\Serializer\Normalizer;
 
 use Symfony\Component\PropertyAccess\Exception\InvalidArgumentException as PropertyAccessInvalidArgumentException;
 use Symfony\Component\PropertyAccess\Exception\InvalidTypeException;
+use Symfony\Component\PropertyAccess\Exception\NoSuchIndexException;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\Exception\UninitializedPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -323,15 +324,16 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
 
         $nestedAttributes = $this->getNestedAttributes($mappedClass);
         $nestedData = $originalNestedData = [];
-        $propertyAccessor = PropertyAccess::createPropertyAccessor();
+        $propertyAccessor = PropertyAccess::createPropertyAccessorBuilder()->enableExceptionOnInvalidIndex()->getPropertyAccessor();
         foreach ($nestedAttributes as $property => $serializedPath) {
-            if (null === $value = $propertyAccessor->getValue($normalizedData, $serializedPath)) {
-                continue;
+            try {
+                $value = $propertyAccessor->getValue($normalizedData, $serializedPath);
+                $convertedProperty = $this->nameConverter ? $this->nameConverter->normalize($property, $mappedClass, $format, $context) : $property;
+                $nestedData[$convertedProperty] = $value;
+                $originalNestedData[$property] = $value;
+                $normalizedData = $this->removeNestedValue($serializedPath->getElements(), $normalizedData);
+            } catch (NoSuchIndexException) {
             }
-            $convertedProperty = $this->nameConverter ? $this->nameConverter->normalize($property, $mappedClass, $format, $context) : $property;
-            $nestedData[$convertedProperty] = $value;
-            $originalNestedData[$property] = $value;
-            $normalizedData = $this->removeNestedValue($serializedPath->getElements(), $normalizedData);
         }
 
         $normalizedData = $nestedData + $normalizedData;
