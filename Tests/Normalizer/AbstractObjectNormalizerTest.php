@@ -1005,6 +1005,29 @@ class AbstractObjectNormalizerTest extends TestCase
         $this->assertSame('nested-id', $test->id);
     }
 
+    public function testDenormalizeMissingAndNullNestedValues()
+    {
+        $normalizer = new AbstractObjectNormalizerWithMetadata();
+
+        $data = [
+            'data' => [
+                'foo' => null,
+            ],
+        ];
+
+        $obj = new class {
+            #[SerializedPath('[data][foo]')]
+            public ?string $foo;
+
+            #[SerializedPath('[data][bar]')]
+            public ?string $bar;
+        };
+
+        $test = $normalizer->denormalize($data, $obj::class);
+        $this->assertNull($test->foo);
+        $this->assertFalse((new \ReflectionProperty($obj, 'bar'))->isInitialized($obj));
+    }
+
     public function testNormalizeBasedOnAllowedAttributes()
     {
         $normalizer = new class extends AbstractObjectNormalizer {
