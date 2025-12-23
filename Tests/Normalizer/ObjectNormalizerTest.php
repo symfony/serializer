@@ -40,6 +40,7 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\GroupDummy;
+use Symfony\Component\Serializer\Tests\Fixtures\Attributes\GroupDummyWithIsPrefixedProperty;
 use Symfony\Component\Serializer\Tests\Fixtures\CircularReferenceDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyPrivatePropertyWithoutGetter;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyWithUnion;
@@ -1139,8 +1140,7 @@ class ObjectNormalizerTest extends TestCase
 
         $this->assertSame([
             'foo' => 'foo',
-        ],
-            $normalized);
+        ], $normalized);
     }
 
     /**
@@ -1195,6 +1195,22 @@ class ObjectNormalizerTest extends TestCase
         );
 
         $this->assertInstanceOf(DiscriminatorDummyTypeA::class, $obj);
+    }
+
+    public function testNormalizeObjectWithGroupsAndIsPrefixedProperty()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $normalizer = new ObjectNormalizer($classMetadataFactory);
+        $serializer = new Serializer([$normalizer]);
+        $normalizer->setSerializer($serializer);
+
+        $object = new GroupDummyWithIsPrefixedProperty();
+
+        $normalizedWithoutGroups = $normalizer->normalize($object);
+        $this->assertArrayHasKey('isSomething', $normalizedWithoutGroups);
+
+        $normalizedWithGroups = $normalizer->normalize($object, null, [AbstractNormalizer::GROUPS => ['test']]);
+        $this->assertArrayHasKey('isSomething', $normalizedWithGroups);
     }
 }
 
