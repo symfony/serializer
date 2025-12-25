@@ -83,7 +83,7 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
                 throw NotNormalizableValueException::createForUnexpectedDataType('The data must be of type '.$backingType, $data, [$backingType], $context['deserialization_path'] ?? null, true, 0, $e);
             }
 
-            $expectedValues = array_map(function ($type) {
+            $expectedValues = array_map(static function ($type) {
                 if (\is_string($type->value)) {
                     return "'{$type->value}'";
                 }
