@@ -88,10 +88,11 @@ class ObjectNormalizer extends AbstractObjectNormalizer
 
         foreach ($reflClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $reflMethod) {
             if (
-                0 !== $reflMethod->getNumberOfRequiredParameters()
+                $reflMethod->getNumberOfRequiredParameters()
                 || $reflMethod->isStatic()
                 || $reflMethod->isConstructor()
                 || $reflMethod->isDestructor()
+                || \in_array((string) $reflMethod->getReturnType(), ['void', 'never'], true)
             ) {
                 continue;
             }
@@ -198,11 +199,7 @@ class ObjectNormalizer extends AbstractObjectNormalizer
 
     private function hasAttributeAccessorMethod(string $class, string $attribute): bool
     {
-        if (!isset(self::$reflectionCache[$class])) {
-            self::$reflectionCache[$class] = new \ReflectionClass($class);
-        }
-
-        $reflection = self::$reflectionCache[$class];
+        $reflection = self::$reflectionCache[$class] ??= new \ReflectionClass($class);
 
         if (!$reflection->hasMethod($attribute)) {
             return false;
@@ -212,6 +209,7 @@ class ObjectNormalizer extends AbstractObjectNormalizer
 
         return !$method->isStatic()
             && !$method->getAttributes(Ignore::class)
-            && !$method->getNumberOfRequiredParameters();
+            && !$method->getNumberOfRequiredParameters()
+            && !\in_array((string) $method->getReturnType(), ['void', 'never'], true);
     }
 }

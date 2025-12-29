@@ -130,13 +130,14 @@ class AttributeLoader implements LoaderInterface
             }
 
             $accessorOrMutator = match ($name[0]) {
-                's' => str_starts_with($name, 'set') && isset($name[$i = 3]),
+                's' => str_starts_with($name, 'set') && isset($name[$i = 3]) && $method->getNumberOfParameters(),
                 'g' => str_starts_with($name, 'get') && isset($name[$i = 3]),
                 'h' => str_starts_with($name, 'has') && isset($name[$i = 3]),
                 'c' => str_starts_with($name, 'can') && isset($name[$i = 3]),
                 'i' => str_starts_with($name, 'is') && isset($name[$i = 2]),
                 default => false,
-            };
+            } && ('s' === $name[0] || !$method->getNumberOfRequiredParameters() && !\in_array((string) $method->getReturnType(), ['void', 'never'], true));
+
             if ($accessorOrMutator && !ctype_lower($name[$i])) {
                 if ($this->hasProperty($method->getDeclaringClass(), $name)) {
                     $attributeName = $name;

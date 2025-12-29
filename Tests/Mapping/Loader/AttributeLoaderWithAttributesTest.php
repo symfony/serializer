@@ -14,6 +14,7 @@ namespace Symfony\Component\Serializer\Tests\Mapping\Loader;
 use Symfony\Component\Serializer\Exception\MappingException;
 use Symfony\Component\Serializer\Mapping\ClassMetadata;
 use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
+use Symfony\Component\Serializer\Tests\Fixtures\VoidNeverReturnTypeDummy;
 
 class AttributeLoaderWithAttributesTest extends AttributeLoaderTestCase
 {
@@ -35,5 +36,16 @@ class AttributeLoaderWithAttributesTest extends AttributeLoaderTestCase
         $classMetadata = new ClassMetadata($this->getNamespace().'\BadAttributeDummy');
 
         $this->loader->loadClassMetadata($classMetadata);
+    }
+
+    public function testSkipVoidNeverReturnTypeAccessors()
+    {
+        $classMetadata = new ClassMetadata(VoidNeverReturnTypeDummy::class);
+        $this->loader->loadClassMetadata($classMetadata);
+
+        $attributesMetadata = $classMetadata->getAttributesMetadata();
+        $this->assertArrayHasKey('normalProperty', $attributesMetadata);
+        $this->assertArrayNotHasKey('voidProperty', $attributesMetadata);
+        $this->assertArrayNotHasKey('neverProperty', $attributesMetadata);
     }
 }
