@@ -38,6 +38,7 @@ use Symfony\Component\Serializer\Tests\Fixtures\CircularReferenceDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\ScalarNormalizer;
 use Symfony\Component\Serializer\Tests\Fixtures\SiblingHolder;
 use Symfony\Component\Serializer\Tests\Fixtures\StdClassNormalizer;
+use Symfony\Component\Serializer\Tests\Fixtures\VoidNeverReturnTypeDummy;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\CacheableObjectAttributesTestTrait;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\CallbacksTestTrait;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\CircularReferenceTestTrait;
@@ -624,6 +625,16 @@ class GetSetMethodNormalizerTest extends TestCase
         );
 
         $this->assertInstanceOf(GetSetMethodDiscriminatedDummyOne::class, $obj);
+    }
+
+    public function testSkipVoidNeverReturnTypeAccessors()
+    {
+        $obj = new VoidNeverReturnTypeDummy();
+        $normalized = $this->normalizer->normalize($obj);
+        $this->assertArrayHasKey('normalProperty', $normalized);
+        $this->assertArrayNotHasKey('voidProperty', $normalized);
+        $this->assertArrayNotHasKey('neverProperty', $normalized);
+        $this->assertEquals('value', $normalized['normalProperty']);
     }
 }
 
