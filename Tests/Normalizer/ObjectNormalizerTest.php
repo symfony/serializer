@@ -1156,6 +1156,28 @@ class ObjectNormalizerTest extends TestCase
         $this->assertSame([], $normalizer->normalize($object, null, ['groups' => 'bar']));
     }
 
+    public function testIgnoreAttributeOnMethodWithSameNameAsProperty()
+    {
+        $normalizer = new ObjectNormalizer(new ClassMetadataFactory(new AttributeLoader()));
+
+        $object = new ObjectWithIgnoredMethodSameNameAsProperty('should_be_ignored', 'should_be_serialized');
+
+        $this->assertSame(['visible' => 'should_be_serialized'], $normalizer->normalize($object));
+    }
+
+    public function testIgnoreAttributeOnMethodWithSameNameAsPropertyWithGroups()
+    {
+        $normalizer = new ObjectNormalizer(new ClassMetadataFactory(new AttributeLoader()));
+
+        $object = new ObjectWithIgnoredMethodSameNameAsPropertyWithGroups('ignored', 'visible_default', 'visible_group');
+
+        // without groups - should include both visible properties
+        $this->assertSame(['visibleDefault' => 'visible_default', 'visibleGroup' => 'visible_group'], $normalizer->normalize($object));
+
+        // with groups - should only include group-specific property, ignored method should never appear
+        $this->assertSame(['visibleGroup' => 'visible_group'], $normalizer->normalize($object, null, ['groups' => ['group1']]));
+    }
+
     /**
      * Priority of accessor methods is defined by the PropertyReadInfoExtractorInterface passed to the PropertyAccessor
      * component. By default ReflectionExtractor::$defaultAccessorPrefixes are used.
@@ -1716,5 +1738,51 @@ class ObjectWithMethodSameNameThanProperty
     public function shouldDoThing()
     {
         return $this->shouldDoThing;
+    }
+}
+
+class ObjectWithIgnoredMethodSameNameAsProperty
+{
+    public string $visible;
+
+    private $ignored;
+
+    public function __construct(string $ignored, string $visible)
+    {
+        $this->ignored = $ignored;
+        $this->visible = $visible;
+    }
+
+    #[Ignore]
+    public function ignored()
+    {
+        return $this->ignored;
+    }
+}
+
+class ObjectWithIgnoredMethodSameNameAsPropertyWithGroups
+{
+    public string $visibleDefault;
+    public string $visibleGroup;
+
+    private $ignored;
+
+    public function __construct(string $ignored, string $visibleDefault, string $visibleGroup)
+    {
+        $this->ignored = $ignored;
+        $this->visibleDefault = $visibleDefault;
+        $this->visibleGroup = $visibleGroup;
+    }
+
+    #[Ignore]
+    public function ignored()
+    {
+        return $this->ignored;
+    }
+
+    #[Groups(['group1'])]
+    public function visibleGroup()
+    {
+        return $this->visibleGroup;
     }
 }
