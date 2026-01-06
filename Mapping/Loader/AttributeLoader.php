@@ -172,9 +172,7 @@ class AttributeLoader implements LoaderInterface
 
                     $attributeMetadata->setSerializedPath($attribute->getSerializedPath());
                 } elseif ($attribute instanceof Ignore) {
-                    if (!$accessorOrMutator && !$hasProperty) {
-                        $attributeMetadata->setIgnore(true);
-                    }
+                    $attributeMetadata->setIgnore(true);
                 } elseif ($attribute instanceof Context) {
                     if (!$accessorOrMutator && !$hasProperty) {
                         throw new MappingException(\sprintf('Context on "%s::%s()" cannot be added. Context can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
