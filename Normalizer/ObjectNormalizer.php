@@ -105,6 +105,8 @@ final class ObjectNormalizer extends AbstractObjectNormalizer
                         $attributeName = lcfirst($attributeName);
                     }
                 }
+            } elseif ($this->hasProperty($reflMethod->getDeclaringClass(), $name)) {
+                $attributeName = $name;
             }
 
             if (null !== $attributeName && $this->isAllowedAttribute($object, $attributeName, $format, $context)) {
