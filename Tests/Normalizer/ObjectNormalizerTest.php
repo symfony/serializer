@@ -19,6 +19,7 @@ use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Symfony\Component\Serializer\Exception\LogicException;
 use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
@@ -1144,6 +1145,17 @@ class ObjectNormalizerTest extends TestCase
         ], $normalized);
     }
 
+    public function testNormalizeObjectWithMethodSameNameAsProperty()
+    {
+        $normalizer = new ObjectNormalizer(new ClassMetadataFactory(new AttributeLoader()));
+
+        $object = new ObjectWithMethodSameNameThanProperty(true);
+
+        $this->assertSame(['shouldDoThing' => true], $normalizer->normalize($object));
+        $this->assertSame(['shouldDoThing' => true], $normalizer->normalize($object, null, ['groups' => 'foo']));
+        $this->assertSame([], $normalizer->normalize($object, null, ['groups' => 'bar']));
+    }
+
     /**
      * Priority of accessor methods is defined by the PropertyReadInfoExtractorInterface passed to the PropertyAccessor
      * component. By default ReflectionExtractor::$defaultAccessorPrefixes are used.
@@ -1690,5 +1702,19 @@ class ObjectWithPropertyIsserAndHasser
     public function hasFoo()
     {
         return 'hasFoo';
+    }
+}
+
+class ObjectWithMethodSameNameThanProperty
+{
+    public function __construct(
+        private $shouldDoThing,
+    ) {
+    }
+
+    #[Groups(['Default', 'foo'])]
+    public function shouldDoThing()
+    {
+        return $this->shouldDoThing;
     }
 }
