@@ -895,7 +895,7 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
     private function removeNestedValue(array $path, array $data): array
     {
         $element = array_shift($path);
-        if (!$path || !$data[$element] = $this->removeNestedValue($path, $data[$element])) {
+        if (!$path || !$data[$element] || !$data[$element] = $this->removeNestedValue($path, $data[$element])) {
             unset($data[$element]);
         }
 
