@@ -12,6 +12,7 @@
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\PropertyAccess\PropertyPath;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
@@ -1029,6 +1030,42 @@ class AbstractObjectNormalizerTest extends TestCase
         $test = $normalizer->denormalize($data, $obj::class);
         $this->assertNull($test->foo);
         $this->assertFalse((new \ReflectionProperty($obj, 'bar'))->isInitialized($obj));
+    }
+
+    public function testDenormalizeNullCoalescingValues()
+    {
+        if (!method_exists(PropertyPath::class, 'isNullSafe')) {
+            $this->markTestSkipped('null coalescing property path is not supported before symfony/property-access 6.2');
+        }
+
+        $normalizer = new AbstractObjectNormalizerWithMetadata();
+
+        $data = [
+            'data' => [
+                'foo' => 'test',
+            ],
+            'empty_data' => null,
+        ];
+
+        $obj = new class {
+            #[SerializedPath('[data][foo?]')]
+            public ?string $foo;
+
+            #[SerializedPath('[data][bar?]')]
+            public ?string $bar;
+
+            #[SerializedPath('[empty_data?][nothing]')]
+            public ?string $nothing;
+
+            #[SerializedPath('[not_set?][nothing]')]
+            public ?string $notSet;
+        };
+
+        $test = $normalizer->denormalize($data, $obj::class);
+        $this->assertSame('test', $test->foo);
+        $this->assertFalse((new \ReflectionProperty($obj, 'bar'))->isInitialized($obj));
+        $this->assertNull($test->nothing);
+        $this->assertFalse((new \ReflectionProperty($obj, 'notSet'))->isInitialized($obj));
     }
 
     public function testNormalizeBasedOnAllowedAttributes()
