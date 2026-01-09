@@ -72,7 +72,7 @@ class PropertyNormalizerTest extends TestCase
 
     private function createNormalizer(array $defaultContext = []): void
     {
-        $this->serializer = $this->createMock(SerializerInterface::class);
+        $this->serializer = $this->createStub(SerializerInterface::class);
         $this->normalizer = new PropertyNormalizer(null, null, null, null, null, $defaultContext);
         $this->normalizer->setSerializer($this->serializer);
     }
@@ -437,7 +437,7 @@ class PropertyNormalizerTest extends TestCase
     {
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Cannot normalize attribute "bar" because the injected serializer is not a normalizer');
-        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer = $this->createStub(SerializerInterface::class);
         $this->normalizer->setSerializer($serializer);
 
         $obj = new PropertyDummy();

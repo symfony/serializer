@@ -44,9 +44,9 @@ class TraceableNormalizerTest extends TestCase
 
     public function testCollectNormalizationData()
     {
-        $normalizer = $this->createMock(NormalizerInterface::class);
+        $normalizer = $this->createStub(NormalizerInterface::class);
         $normalizer->method('getSupportedTypes')->willReturn(['*' => false]);
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $denormalizer->method('getSupportedTypes')->willReturn(['*' => false]);
 
         $dataCollector = $this->createMock(SerializerDataCollector::class);
@@ -65,9 +65,9 @@ class TraceableNormalizerTest extends TestCase
 
     public function testNotCollectNormalizationDataIfNoDebugTraceId()
     {
-        $normalizer = $this->createMock(NormalizerInterface::class);
+        $normalizer = $this->createStub(NormalizerInterface::class);
         $normalizer->method('getSupportedTypes')->willReturn(['*' => false]);
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $denormalizer->method('getSupportedTypes')->willReturn(['*' => false]);
 
         $dataCollector = $this->createMock(SerializerDataCollector::class);
@@ -82,23 +82,23 @@ class TraceableNormalizerTest extends TestCase
     {
         $this->expectException(\BadMethodCallException::class);
 
-        (new TraceableNormalizer($this->createMock(DenormalizerInterface::class), new SerializerDataCollector()))->normalize('data');
+        (new TraceableNormalizer($this->createStub(DenormalizerInterface::class), new SerializerDataCollector()))->normalize('data');
     }
 
     public function testCannotDenormalizeIfNotDenormalizer()
     {
         $this->expectException(\BadMethodCallException::class);
 
-        (new TraceableNormalizer($this->createMock(NormalizerInterface::class), new SerializerDataCollector()))->denormalize('data', 'type');
+        (new TraceableNormalizer($this->createStub(NormalizerInterface::class), new SerializerDataCollector()))->denormalize('data', 'type');
     }
 
     public function testSupports()
     {
-        $normalizer = $this->createMock(NormalizerInterface::class);
+        $normalizer = $this->createStub(NormalizerInterface::class);
         $normalizer->method('getSupportedTypes')->willReturn(['*' => false]);
         $normalizer->method('supportsNormalization')->willReturn(true);
 
-        $denormalizer = $this->createMock(DenormalizerInterface::class);
+        $denormalizer = $this->createStub(DenormalizerInterface::class);
         $denormalizer->method('getSupportedTypes')->willReturn(['*' => false]);
         $denormalizer->method('supportsDenormalization')->willReturn(true);
 

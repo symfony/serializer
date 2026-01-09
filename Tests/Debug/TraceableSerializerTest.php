@@ -106,7 +106,7 @@ class TraceableSerializerTest extends TestCase
 
     public function testAddDebugTraceIdInContext()
     {
-        $serializer = $this->createMock(Serializer::class);
+        $serializer = $this->createStub(Serializer::class);
 
         foreach (['serialize', 'deserialize', 'normalize', 'denormalize', 'encode', 'decode'] as $method) {
             $serializer->method($method)->willReturnCallback(function (): string {

@@ -295,7 +295,7 @@ class ObjectNormalizerTest extends TestCase
 
     public function testConstructorWithObjectDenormalizeUsingPropertyInfoExtractor()
     {
-        $serializer = $this->createMock(ObjectSerializerNormalizer::class);
+        $serializer = $this->createStub(ObjectSerializerNormalizer::class);
         $normalizer = new ObjectNormalizer(null, null, null, null, null, null, [], new PropertyInfoExtractor());
         $normalizer->setSerializer($serializer);
 
@@ -684,7 +684,7 @@ class ObjectNormalizerTest extends TestCase
     {
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Cannot normalize attribute "object" because the injected serializer is not a normalizer');
-        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer = $this->createStub(SerializerInterface::class);
         $this->normalizer->setSerializer($serializer);
 
         $obj = new ObjectDummy();

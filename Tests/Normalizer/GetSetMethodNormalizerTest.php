@@ -395,7 +395,7 @@ class GetSetMethodNormalizerTest extends TestCase
     {
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Cannot normalize attribute "object" because the injected serializer is not a normalizer');
-        $this->normalizer->setSerializer($this->createMock(SerializerInterface::class));
+        $this->normalizer->setSerializer($this->createStub(SerializerInterface::class));
 
         $obj = new GetSetDummy();
         $object = new \stdClass();
