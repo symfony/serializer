@@ -46,7 +46,8 @@
     },
     "conflict": {
         "phpdocumentor/reflection-docblock": "<3.2.2",
-        "phpdocumentor/type-resolver": "<1.4.0"
+        "phpdocumentor/type-resolver": "<1.4.0",
+        "symfony/property-info": "<7.3"
     },
     "autoload": {
         "psr-4": { "Symfony\\Component\\Serializer\\": "" },
