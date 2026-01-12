@@ -11,7 +11,6 @@
 
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Normalizer\UnwrappingDenormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -20,23 +19,16 @@ use Symfony\Component\Serializer\Tests\Normalizer\Features\ObjectDummy;
 /**
  * @author Eduard Bulava <bulavaeduard@gmail.com>
  */
-class UnwrappinDenormalizerTest extends TestCase
+class UnwrappingDenormalizerTest extends TestCase
 {
-    private UnwrappingDenormalizer $denormalizer;
-    private MockObject&Serializer $serializer;
-
-    protected function setUp(): void
-    {
-        $this->serializer = $this->createMock(Serializer::class);
-        $this->denormalizer = new UnwrappingDenormalizer();
-        $this->denormalizer->setSerializer($this->serializer);
-    }
-
     public function testSupportsNormalization()
     {
-        $this->assertTrue($this->denormalizer->supportsDenormalization([], 'stdClass', 'any', [UnwrappingDenormalizer::UNWRAP_PATH => '[baz][inner]']));
-        $this->assertFalse($this->denormalizer->supportsDenormalization([], 'stdClass', 'any', [UnwrappingDenormalizer::UNWRAP_PATH => '[baz][inner]', 'unwrapped' => true]));
-        $this->assertFalse($this->denormalizer->supportsDenormalization([], 'stdClass', 'any', []));
+        $denormalizer = new UnwrappingDenormalizer();
+        $denormalizer->setSerializer($this->createStub(Serializer::class));
+
+        $this->assertTrue($denormalizer->supportsDenormalization([], 'stdClass', 'any', [UnwrappingDenormalizer::UNWRAP_PATH => '[baz][inner]']));
+        $this->assertFalse($denormalizer->supportsDenormalization([], 'stdClass', 'any', [UnwrappingDenormalizer::UNWRAP_PATH => '[baz][inner]', 'unwrapped' => true]));
+        $this->assertFalse($denormalizer->supportsDenormalization([], 'stdClass', 'any', []));
     }
 
     public function testDenormalize()
@@ -46,12 +38,15 @@ class UnwrappinDenormalizerTest extends TestCase
         $expected->bar = 'bar';
         $expected->setFoo('foo');
 
-        $this->serializer->expects($this->exactly(1))
+        $serializer = $this->createMock(Serializer::class);
+        $serializer->expects($this->exactly(1))
             ->method('denormalize')
             ->with(['foo' => 'foo', 'bar' => 'bar', 'baz' => true])
             ->willReturn($expected);
+        $denormalizer = new UnwrappingDenormalizer();
+        $denormalizer->setSerializer($serializer);
 
-        $result = $this->denormalizer->denormalize(
+        $result = $denormalizer->denormalize(
             ['data' => ['foo' => 'foo', 'bar' => 'bar', 'baz' => true]],
             ObjectDummy::class,
             'any',
@@ -65,12 +60,15 @@ class UnwrappinDenormalizerTest extends TestCase
 
     public function testDenormalizeInvalidPath()
     {
-        $this->serializer->expects($this->exactly(1))
+        $serializer = $this->createMock(Serializer::class);
+        $serializer->expects($this->exactly(1))
             ->method('denormalize')
             ->with(null)
             ->willReturn(new ObjectDummy());
+        $denormalizer = new UnwrappingDenormalizer();
+        $denormalizer->setSerializer($serializer);
 
-        $obj = $this->denormalizer->denormalize(
+        $obj = $denormalizer->denormalize(
             ['data' => ['foo' => 'foo', 'bar' => 'bar', 'baz' => true]],
             ObjectDummy::class,
             'any',

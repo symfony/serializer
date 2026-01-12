@@ -14,8 +14,10 @@ namespace Symfony\Component\Serializer\Tests\Mapping\Factory;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Serializer\Mapping\AttributeMetadata;
 use Symfony\Component\Serializer\Mapping\ClassMetadata;
+use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
 use Symfony\Component\Serializer\Mapping\Factory\CompiledClassMetadataFactory;
+use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\SerializedNameDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Dummy;
 
@@ -28,15 +30,14 @@ final class CompiledClassMetadataFactoryTest extends TestCase
 {
     public function testItImplementsClassMetadataFactoryInterface()
     {
-        $classMetadataFactory = $this->createMock(ClassMetadataFactoryInterface::class);
-        $compiledClassMetadataFactory = new CompiledClassMetadataFactory(__DIR__.'/../../Fixtures/serializer.class.metadata.php', $classMetadataFactory);
+        $compiledClassMetadataFactory = new CompiledClassMetadataFactory(__DIR__.'/../../Fixtures/serializer.class.metadata.php', new ClassMetadataFactory(new AttributeLoader()));
 
         $this->assertInstanceOf(ClassMetadataFactoryInterface::class, $compiledClassMetadataFactory);
     }
 
     public function testItThrowAnExceptionWhenCacheFileIsNotFound()
     {
-        $classMetadataFactory = $this->createMock(ClassMetadataFactoryInterface::class);
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessageMatches('#File ".*/Fixtures/not-found-serializer.class.metadata.php" could not be found.#');
@@ -46,7 +47,7 @@ final class CompiledClassMetadataFactoryTest extends TestCase
 
     public function testItThrowAnExceptionWhenMetadataIsNotOfTypeArray()
     {
-        $classMetadataFactory = $this->createMock(ClassMetadataFactoryInterface::class);
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Compiled metadata must be of the type array, object given.');
@@ -95,8 +96,7 @@ final class CompiledClassMetadataFactoryTest extends TestCase
 
     public function testItReturnsTheSameInstance()
     {
-        $classMetadataFactory = $this->createMock(ClassMetadataFactoryInterface::class);
-        $compiledClassMetadataFactory = new CompiledClassMetadataFactory(__DIR__.'/../../Fixtures/serializer.class.metadata.php', $classMetadataFactory);
+        $compiledClassMetadataFactory = new CompiledClassMetadataFactory(__DIR__.'/../../Fixtures/serializer.class.metadata.php', new ClassMetadataFactory(new AttributeLoader()));
 
         $this->assertSame($compiledClassMetadataFactory->getMetadataFor(Dummy::class), $compiledClassMetadataFactory->getMetadataFor(Dummy::class));
     }

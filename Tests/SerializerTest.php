@@ -104,7 +104,7 @@ class SerializerTest extends TestCase
 
     public function testNormalizeNoMatch()
     {
-        $serializer = new Serializer([$this->createMock(NormalizerInterface::class)]);
+        $serializer = new Serializer([$this->createStub(NormalizerInterface::class)]);
 
         $this->expectException(UnexpectedValueException::class);
 
@@ -136,7 +136,7 @@ class SerializerTest extends TestCase
 
     public function testDenormalizeNoMatch()
     {
-        $serializer = new Serializer([$this->createMock(NormalizerInterface::class)]);
+        $serializer = new Serializer([$this->createStub(NormalizerInterface::class)]);
 
         $this->expectException(UnexpectedValueException::class);
 
@@ -172,13 +172,13 @@ class SerializerTest extends TestCase
 
     public function testNormalizeWithSupportOnData()
     {
-        $normalizer1 = $this->createMock(NormalizerInterface::class);
+        $normalizer1 = $this->createStub(NormalizerInterface::class);
         $normalizer1->method('getSupportedTypes')->willReturn(['*' => false]);
         $normalizer1->method('supportsNormalization')
             ->willReturnCallback(fn ($data, $format) => isset($data->test));
         $normalizer1->method('normalize')->willReturn('test1');
 
-        $normalizer2 = $this->createMock(NormalizerInterface::class);
+        $normalizer2 = $this->createStub(NormalizerInterface::class);
         $normalizer2->method('getSupportedTypes')->willReturn(['*' => false]);
         $normalizer2->method('supportsNormalization')
             ->willReturn(true);
@@ -195,13 +195,13 @@ class SerializerTest extends TestCase
 
     public function testDenormalizeWithSupportOnData()
     {
-        $denormalizer1 = $this->createMock(DenormalizerInterface::class);
+        $denormalizer1 = $this->createStub(DenormalizerInterface::class);
         $denormalizer1->method('getSupportedTypes')->willReturn(['*' => false]);
         $denormalizer1->method('supportsDenormalization')
             ->willReturnCallback(fn ($data, $type, $format) => isset($data['test1']));
         $denormalizer1->method('denormalize')->willReturn('test1');
 
-        $denormalizer2 = $this->createMock(DenormalizerInterface::class);
+        $denormalizer2 = $this->createStub(DenormalizerInterface::class);
         $denormalizer2->method('getSupportedTypes')->willReturn(['*' => false]);
         $denormalizer2->method('supportsDenormalization')
             ->willReturn(true);

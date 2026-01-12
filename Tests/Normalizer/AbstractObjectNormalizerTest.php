@@ -440,7 +440,7 @@ class AbstractObjectNormalizerTest extends TestCase
 
     private function getDenormalizerForDummyCollection()
     {
-        $extractor = $this->createMock(PhpDocExtractor::class);
+        $extractor = $this->createStub(PhpDocExtractor::class);
 
         if (method_exists(PhpDocExtractor::class, 'getType')) {
             $extractor->method('getType')
@@ -504,7 +504,7 @@ class AbstractObjectNormalizerTest extends TestCase
 
     private function getDenormalizerForStringCollection()
     {
-        $extractor = $this->createMock(PhpDocExtractor::class);
+        $extractor = $this->createStub(PhpDocExtractor::class);
 
         if (method_exists(PhpDocExtractor::class, 'getType')) {
             $extractor->method('getType')
@@ -802,7 +802,7 @@ class AbstractObjectNormalizerTest extends TestCase
 
     private function getDenormalizerForObjectWithBasicProperties()
     {
-        $extractor = $this->createMock(PhpDocExtractor::class);
+        $extractor = $this->createStub(PhpDocExtractor::class);
 
         if (method_exists(PhpDocExtractor::class, 'getType')) {
             $extractor->method('getType')

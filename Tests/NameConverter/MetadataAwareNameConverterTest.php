@@ -16,7 +16,6 @@ use Symfony\Component\Serializer\Attribute\SerializedName;
 use Symfony\Component\Serializer\Attribute\SerializedPath;
 use Symfony\Component\Serializer\Exception\LogicException;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
-use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
 use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Serializer\NameConverter\MetadataAwareNameConverter;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
@@ -30,8 +29,7 @@ final class MetadataAwareNameConverterTest extends TestCase
 {
     public function testInterface()
     {
-        $classMetadataFactory = $this->createMock(ClassMetadataFactoryInterface::class);
-        $nameConverter = new MetadataAwareNameConverter($classMetadataFactory);
+        $nameConverter = new MetadataAwareNameConverter(new ClassMetadataFactory(new AttributeLoader()));
         $this->assertInstanceOf(NameConverterInterface::class, $nameConverter);
     }
 
@@ -54,7 +52,7 @@ final class MetadataAwareNameConverterTest extends TestCase
     {
         $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
 
-        $fallback = $this->createMock(NameConverterInterface::class);
+        $fallback = $this->createStub(NameConverterInterface::class);
         $fallback
             ->method('normalize')
             ->willReturnCallback(static fn ($propertyName) => strtoupper($propertyName))
@@ -84,7 +82,7 @@ final class MetadataAwareNameConverterTest extends TestCase
     {
         $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
 
-        $fallback = $this->createMock(NameConverterInterface::class);
+        $fallback = $this->createStub(NameConverterInterface::class);
         $fallback
             ->method('denormalize')
             ->willReturnCallback(static fn ($propertyName) => strtolower($propertyName))
