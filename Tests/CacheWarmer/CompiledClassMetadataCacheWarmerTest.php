@@ -17,8 +17,9 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 use Symfony\Component\Serializer\CacheWarmer\CompiledClassMetadataCacheWarmer;
+use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryCompiler;
-use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
+use Symfony\Component\Serializer\Mapping\Loader\AttributeLoader;
 
 #[IgnoreDeprecations]
 #[Group('legacy')]
@@ -26,28 +27,20 @@ final class CompiledClassMetadataCacheWarmerTest extends TestCase
 {
     public function testItImplementsCacheWarmerInterface()
     {
-        $classMetadataFactory = $this->createMock(ClassMetadataFactoryInterface::class);
-        $filesystem = $this->createMock(Filesystem::class);
-
-        $compiledClassMetadataCacheWarmer = new CompiledClassMetadataCacheWarmer([], $classMetadataFactory, new ClassMetadataFactoryCompiler(), $filesystem);
+        $compiledClassMetadataCacheWarmer = new CompiledClassMetadataCacheWarmer([], new ClassMetadataFactory(new AttributeLoader()), new ClassMetadataFactoryCompiler(), new Filesystem());
 
         $this->assertInstanceOf(CacheWarmerInterface::class, $compiledClassMetadataCacheWarmer);
     }
 
     public function testItIsAnOptionalCacheWarmer()
     {
-        $classMetadataFactory = $this->createMock(ClassMetadataFactoryInterface::class);
-        $filesystem = $this->createMock(Filesystem::class);
-
-        $compiledClassMetadataCacheWarmer = new CompiledClassMetadataCacheWarmer([], $classMetadataFactory, new ClassMetadataFactoryCompiler(), $filesystem);
+        $compiledClassMetadataCacheWarmer = new CompiledClassMetadataCacheWarmer([], new ClassMetadataFactory(new AttributeLoader()), new ClassMetadataFactoryCompiler(), new Filesystem());
 
         $this->assertTrue($compiledClassMetadataCacheWarmer->isOptional());
     }
 
     public function testItDumpCompiledClassMetadatas()
     {
-        $classMetadataFactory = $this->createMock(ClassMetadataFactoryInterface::class);
-
         $code = <<<EOF
             <?php
 
@@ -64,7 +57,7 @@ final class CompiledClassMetadataCacheWarmerTest extends TestCase
             ->with('/var/cache/prod/serializer.class.metadata.php', $code)
         ;
 
-        $compiledClassMetadataCacheWarmer = new CompiledClassMetadataCacheWarmer([], $classMetadataFactory, new ClassMetadataFactoryCompiler(), $filesystem);
+        $compiledClassMetadataCacheWarmer = new CompiledClassMetadataCacheWarmer([], new ClassMetadataFactory(new AttributeLoader()), new ClassMetadataFactoryCompiler(), $filesystem);
 
         $compiledClassMetadataCacheWarmer->warmUp('/var/cache/prod');
     }
