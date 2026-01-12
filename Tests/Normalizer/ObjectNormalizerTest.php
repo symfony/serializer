@@ -297,7 +297,7 @@ class ObjectNormalizerTest extends TestCase
 
     public function testConstructorWithObjectDenormalizeUsingPropertyInfoExtractor()
     {
-        $serializer = $this->createMock(ObjectSerializerNormalizer::class);
+        $serializer = $this->createStub(ObjectSerializerNormalizer::class);
         $normalizer = new ObjectNormalizer(null, null, null, null, null, null, [], new PropertyInfoExtractor());
         $normalizer->setSerializer($serializer);
 
@@ -690,7 +690,7 @@ class ObjectNormalizerTest extends TestCase
 
     public function testUnableToNormalizeObjectAttribute()
     {
-        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer = $this->createStub(SerializerInterface::class);
         $this->normalizer->setSerializer($serializer);
 
         $obj = new ObjectDummy();

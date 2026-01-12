@@ -74,7 +74,7 @@ class PropertyNormalizerTest extends TestCase
 
     private function createNormalizer(array $defaultContext = []): void
     {
-        $this->serializer = $this->createMock(SerializerInterface::class);
+        $this->serializer = $this->createStub(SerializerInterface::class);
         $this->normalizer = new PropertyNormalizer(null, null, null, null, null, $defaultContext);
         $this->normalizer->setSerializer($this->serializer);
     }
@@ -455,7 +455,7 @@ class PropertyNormalizerTest extends TestCase
 
     public function testUnableToNormalizeObjectAttribute()
     {
-        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer = $this->createStub(SerializerInterface::class);
         $this->normalizer->setSerializer($serializer);
 
         $obj = new PropertyDummy();
