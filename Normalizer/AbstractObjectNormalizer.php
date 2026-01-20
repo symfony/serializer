@@ -348,6 +348,16 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
                 if (isset($nestedData[$notConverted]) && !isset($originalNestedData[$attribute])) {
                     throw new LogicException(\sprintf('Duplicate values for key "%s" found. One value is set via the SerializedPath attribute: "%s", the other one is set via the SerializedName attribute: "%s".', $notConverted, implode('->', $nestedAttributes[$notConverted]->getElements()), $attribute));
                 }
+
+                if ($attribute === $notConverted
+                    && !($context[self::ALLOW_EXTRA_ATTRIBUTES] ?? $this->defaultContext[self::ALLOW_EXTRA_ATTRIBUTES])
+                    && (false === $allowedAttributes || \in_array($attribute, $allowedAttributes, true))
+                    && $this->nameConverter->normalize($attribute, $resolvedClass, $format, $context) !== $attribute
+                ) {
+                    // Input was in wrong format (e.g., camelCase when snake_case expected)
+                    $extraAttributes[] = $notConverted;
+                    continue;
+                }
             }
 
             $attributeContext = $this->getAttributeDenormalizationContext($resolvedClass, $attribute, $context);
