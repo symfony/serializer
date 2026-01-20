@@ -18,10 +18,11 @@ use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
 use Symfony\Component\PropertyInfo\PropertyWriteInfo;
-use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Attribute\Ignore;
 use Symfony\Component\Serializer\Exception\LogicException;
 use Symfony\Component\Serializer\Mapping\ClassDiscriminatorResolverInterface;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
+use Symfony\Component\Serializer\Mapping\Loader\AccessorCollisionResolverTrait;
 use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
 
 /**
@@ -33,6 +34,8 @@ use Symfony\Component\Serializer\NameConverter\NameConverterInterface;
  */
 class ObjectNormalizer extends AbstractObjectNormalizer
 {
+    use AccessorCollisionResolverTrait;
+
     private static $reflectionCache = [];
     private static $isReadableCache = [];
     private static $isWritableCache = [];
@@ -87,37 +90,10 @@ class ObjectNormalizer extends AbstractObjectNormalizer
         $reflClass = new \ReflectionClass($class);
 
         foreach ($reflClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $reflMethod) {
-            if (
-                $reflMethod->getNumberOfRequiredParameters()
-                || $reflMethod->isStatic()
-                || $reflMethod->isConstructor()
-                || $reflMethod->isDestructor()
-                || \in_array((string) $reflMethod->getReturnType(), ['void', 'never'], true)
-            ) {
-                continue;
-            }
-
             $name = $reflMethod->name;
-            $attributeName = null;
+            $attributeName = $this->getAttributeNameFromAccessor($reflClass, $reflMethod, false);
 
-            // ctype_lower check to find out if method looks like accessor but actually is not, e.g. hash, cancel
-            if (match ($name[0]) {
-                'g' => str_starts_with($name, 'get') && isset($name[$i = 3]),
-                'h' => str_starts_with($name, 'has') && isset($name[$i = 3]),
-                'c' => str_starts_with($name, 'can') && isset($name[$i = 3]),
-                'i' => str_starts_with($name, 'is') && isset($name[$i = 2]),
-                default => false,
-            } && !ctype_lower($name[$i])) {
-                if ($this->hasProperty($reflMethod->getDeclaringClass(), $name)) {
-                    $attributeName = $name;
-                } else {
-                    $attributeName = substr($name, $i);
-
-                    if (!$reflClass->hasProperty($attributeName)) {
-                        $attributeName = lcfirst($attributeName);
-                    }
-                }
-            } elseif ($this->hasProperty($reflMethod->getDeclaringClass(), $name)) {
+            if ($this->hasPropertyForAccessor($reflMethod->getDeclaringClass(), $name) && (null === $attributeName || $this->hasAttributeNameCollision($reflClass, $attributeName, $name))) {
                 $attributeName = $name;
             }
 
@@ -140,17 +116,6 @@ class ObjectNormalizer extends AbstractObjectNormalizer
         }
 
         return array_keys($attributes);
-    }
-
-    private function hasProperty(\ReflectionClass $class, string $propName): bool
-    {
-        do {
-            if ($class->hasProperty($propName)) {
-                return true;
-            }
-        } while ($class = $class->getParentClass());
-
-        return false;
     }
 
     protected function getAttributeValue(object $object, string $attribute, ?string $format = null, array $context = []): mixed

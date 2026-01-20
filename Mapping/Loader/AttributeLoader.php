@@ -34,6 +34,8 @@ use Symfony\Component\Serializer\Mapping\ClassMetadataInterface;
  */
 class AttributeLoader implements LoaderInterface
 {
+    use AccessorCollisionResolverTrait;
+
     private const KNOWN_ATTRIBUTES = [
         DiscriminatorMap::class,
         Groups::class,
@@ -129,25 +131,13 @@ class AttributeLoader implements LoaderInterface
                 continue; /*  matches the BC behavior in `Symfony\Component\Serializer\Normalizer\ObjectNormalizer::extractAttributes` */
             }
 
-            $accessorOrMutator = match ($name[0]) {
-                's' => str_starts_with($name, 'set') && isset($name[$i = 3]) && $method->getNumberOfParameters(),
-                'g' => str_starts_with($name, 'get') && isset($name[$i = 3]),
-                'h' => str_starts_with($name, 'has') && isset($name[$i = 3]),
-                'c' => str_starts_with($name, 'can') && isset($name[$i = 3]),
-                'i' => str_starts_with($name, 'is') && isset($name[$i = 2]),
-                default => false,
-            } && ('s' === $name[0] || !$method->getNumberOfRequiredParameters() && !\in_array((string) $method->getReturnType(), ['void', 'never'], true));
+            $attributeName = $this->getAttributeNameFromAccessor($reflectionClass, $method, true);
+            $accessorOrMutator = null !== $attributeName;
+            $hasProperty = $this->hasPropertyForAccessor($method->getDeclaringClass(), $name);
 
-            $hasProperty = $this->hasProperty($method->getDeclaringClass(), $name);
-            if ($hasProperty || $accessorOrMutator && !ctype_lower($name[$i])) {
-                if ($hasProperty) {
+            if ($hasProperty || $accessorOrMutator) {
+                if (null === $attributeName || 's' !== $name[0] && $hasProperty && $this->hasAttributeNameCollision($reflectionClass, $attributeName, $name)) {
                     $attributeName = $name;
-                } else {
-                    $attributeName = substr($name, $i);
-
-                    if (!$reflectionClass->hasProperty($attributeName)) {
-                        $attributeName = lcfirst($attributeName);
-                    }
                 }
 
                 if (isset($attributesMetadata[$attributeName])) {
@@ -272,17 +262,6 @@ class AttributeLoader implements LoaderInterface
                 return true;
             }
         }
-
-        return false;
-    }
-
-    private function hasProperty(\ReflectionClass $class, string $propName): bool
-    {
-        do {
-            if ($class->hasProperty($propName)) {
-                return true;
-            }
-        } while ($class = $class->getParentClass());
 
         return false;
     }
