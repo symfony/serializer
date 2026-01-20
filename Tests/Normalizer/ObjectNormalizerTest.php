@@ -21,6 +21,7 @@ use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
+use Symfony\Component\Serializer\Exception\ExtraAttributesException;
 use Symfony\Component\Serializer\Exception\LogicException;
 use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
 use Symfony\Component\Serializer\Exception\RuntimeException;
@@ -1232,6 +1233,51 @@ class ObjectNormalizerTest extends TestCase
         $this->assertInstanceOf(DiscriminatorDummyTypeA::class, $obj);
     }
 
+    public function testNameConverterWithWrongCaseAndAllowExtraAttributesFalse()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $normalizer = new ObjectNormalizer($classMetadataFactory, new CamelCaseToSnakeCaseNameConverter());
+
+        $result = $normalizer->denormalize(
+            ['some_camel_case_property' => 1],
+            NameConverterTestDummy::class,
+            null,
+            [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false]
+        );
+        $this->assertSame(1, $result->someCamelCaseProperty);
+
+        $this->expectException(ExtraAttributesException::class);
+        $this->expectExceptionMessage('someCamelCaseProperty');
+        $normalizer->denormalize(
+            ['someCamelCaseProperty' => 1],
+            NameConverterTestDummy::class,
+            null,
+            [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false]
+        );
+    }
+
+    public function testNameConverterWithWrongCaseAndAllowExtraAttributesTrue()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $normalizer = new ObjectNormalizer($classMetadataFactory, new CamelCaseToSnakeCaseNameConverter());
+
+        $result = $normalizer->denormalize(
+            ['someCamelCaseProperty' => 999],
+            NameConverterTestDummy::class,
+            null,
+            [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => true]
+        );
+        $this->assertSame(0, $result->someCamelCaseProperty);
+
+        $result = $normalizer->denormalize(
+            ['some_camel_case_property' => 42],
+            NameConverterTestDummy::class,
+            null,
+            [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => true]
+        );
+        $this->assertSame(42, $result->someCamelCaseProperty);
+    }
+
     public function testNormalizeObjectWithGroupsAndIsPrefixedProperty()
     {
         $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
@@ -1784,5 +1830,22 @@ class ObjectWithIgnoredMethodSameNameAsPropertyWithGroups
     public function visibleGroup()
     {
         return $this->visibleGroup;
+    }
+}
+
+class NameConverterTestDummy
+{
+    public function __construct(
+        public readonly int $someCamelCaseProperty = 0,
+    ) {
+    }
+}
+
+class NameConverterTestDummyMultiple
+{
+    public function __construct(
+        public readonly int $someCamelCaseProperty = 0,
+        public readonly int $anotherProperty = 0,
+    ) {
     }
 }
