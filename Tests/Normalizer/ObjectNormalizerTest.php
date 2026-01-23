@@ -21,6 +21,7 @@ use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
+use Symfony\Component\Serializer\Exception\ExtraAttributesException;
 use Symfony\Component\Serializer\Exception\LogicException;
 use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
 use Symfony\Component\Serializer\Exception\RuntimeException;
@@ -1210,6 +1211,61 @@ class ObjectNormalizerTest extends TestCase
         ], $normalizedSwappedHasserIsser);
     }
 
+    public function testIsserPrefersBaseNameWhenNoCollision()
+    {
+        $normalizer = new ObjectNormalizer();
+
+        $object = new ObjectWithIsPrefixedPropertyOnly(true);
+
+        $this->assertSame(['published' => true], $normalizer->normalize($object));
+    }
+
+    public function testIsserKeepsPrefixWhenBaseNameCollides()
+    {
+        $normalizer = new ObjectNormalizer();
+
+        $object = new ObjectWithIsPrefixedPropertyAndPublishedGetter(true, 'live');
+
+        $this->assertEquals([
+            'published' => 'live',
+            'isPublished' => true,
+        ], $normalizer->normalize($object));
+    }
+
+    public function testIsserKeepsPrefixWhenPublicPropertyCollidesWithoutGetter()
+    {
+        $normalizer = new ObjectNormalizer();
+
+        $object = new ObjectWithIsserAndPublicPropertyNoGetter(true, 'live');
+
+        // Both should appear: isPublished keeps prefix because $published property exists
+        $this->assertEquals([
+            'isPublished' => true,
+            'published' => 'live',
+        ], $normalizer->normalize($object));
+    }
+
+    public function testIsserWithPublicPropertyCollision()
+    {
+        $normalizer = new ObjectNormalizer();
+
+        $object = new ObjectWithPublicPublishedPropertyAndIsser('live');
+
+        // The isser takes precedence over the public property - this documents existing behavior
+        $this->assertSame(['published' => true], $normalizer->normalize($object));
+    }
+
+    public function testIsserWithPrivatePropertyNoMethodNamedProperty()
+    {
+        $normalizer = new ObjectNormalizer();
+
+        $object = new ObjectWithPrivatePublishedAndIsser(true);
+
+        // isPublished() should normalize to 'published', not 'isPublished'
+        // because there's no $isPublished property that would cause a collision
+        $this->assertSame(['published' => true], $normalizer->normalize($object));
+    }
+
     public function testDiscriminatorWithAllowExtraAttributesFalse()
     {
         // Discriminator type property should be allowed with allow_extra_attributes=false
@@ -1227,6 +1283,51 @@ class ObjectNormalizerTest extends TestCase
         $this->assertInstanceOf(DiscriminatorDummyTypeA::class, $obj);
     }
 
+    public function testNameConverterWithWrongCaseAndAllowExtraAttributesFalse()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $normalizer = new ObjectNormalizer($classMetadataFactory, new CamelCaseToSnakeCaseNameConverter());
+
+        $result = $normalizer->denormalize(
+            ['some_camel_case_property' => 1],
+            NameConverterTestDummy::class,
+            null,
+            [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false]
+        );
+        $this->assertSame(1, $result->someCamelCaseProperty);
+
+        $this->expectException(ExtraAttributesException::class);
+        $this->expectExceptionMessage('someCamelCaseProperty');
+        $normalizer->denormalize(
+            ['someCamelCaseProperty' => 1],
+            NameConverterTestDummy::class,
+            null,
+            [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => false]
+        );
+    }
+
+    public function testNameConverterWithWrongCaseAndAllowExtraAttributesTrue()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $normalizer = new ObjectNormalizer($classMetadataFactory, new CamelCaseToSnakeCaseNameConverter());
+
+        $result = $normalizer->denormalize(
+            ['someCamelCaseProperty' => 999],
+            NameConverterTestDummy::class,
+            null,
+            [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => true]
+        );
+        $this->assertSame(0, $result->someCamelCaseProperty);
+
+        $result = $normalizer->denormalize(
+            ['some_camel_case_property' => 42],
+            NameConverterTestDummy::class,
+            null,
+            [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => true]
+        );
+        $this->assertSame(42, $result->someCamelCaseProperty);
+    }
+
     public function testNormalizeObjectWithGroupsAndIsPrefixedProperty()
     {
         $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
@@ -1237,10 +1338,25 @@ class ObjectNormalizerTest extends TestCase
         $object = new GroupDummyWithIsPrefixedProperty();
 
         $normalizedWithoutGroups = $normalizer->normalize($object);
-        $this->assertArrayHasKey('isSomething', $normalizedWithoutGroups);
+        $this->assertArrayHasKey('something', $normalizedWithoutGroups);
 
         $normalizedWithGroups = $normalizer->normalize($object, null, [AbstractNormalizer::GROUPS => ['test']]);
-        $this->assertArrayHasKey('isSomething', $normalizedWithGroups);
+        $this->assertArrayHasKey('something', $normalizedWithGroups);
+    }
+
+    public function testNormalizeObjectWithGroupsAndIsPrefixedPropertyWithCollision()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $normalizer = new ObjectNormalizer($classMetadataFactory);
+        $serializer = new Serializer([$normalizer]);
+        $normalizer->setSerializer($serializer);
+
+        $object = new GroupDummyWithIsPrefixedPropertyAndPublishedGetter();
+
+        $normalizedWithGroups = $normalizer->normalize($object, null, [AbstractNormalizer::GROUPS => ['test']]);
+
+        $this->assertArrayHasKey('isPublished', $normalizedWithGroups);
+        $this->assertArrayNotHasKey('published', $normalizedWithGroups);
     }
 
     public function testSkipVoidNeverReturnTypeAccessors()
@@ -1722,6 +1838,100 @@ class ObjectWithPropertyIsserAndHasser
     }
 }
 
+class ObjectWithIsPrefixedPropertyOnly
+{
+    public function __construct(
+        private bool $isPublished,
+    ) {
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->isPublished;
+    }
+}
+
+class ObjectWithIsPrefixedPropertyAndPublishedGetter
+{
+    public function __construct(
+        private bool $isPublished,
+        private string $published,
+    ) {
+    }
+
+    public function getPublished(): string
+    {
+        return $this->published;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->isPublished;
+    }
+}
+
+class GroupDummyWithIsPrefixedPropertyAndPublishedGetter
+{
+    private bool $isPublished = true;
+    private string $published = 'live';
+
+    #[Groups(['test'])]
+    public function isPublished(): bool
+    {
+        return $this->isPublished;
+    }
+
+    public function getPublished(): string
+    {
+        return $this->published;
+    }
+}
+
+class ObjectWithPublicPublishedPropertyAndIsser
+{
+    public string $published;
+
+    public function __construct(string $published)
+    {
+        $this->published = $published;
+    }
+
+    public function isPublished(): bool
+    {
+        return '' !== $this->published;
+    }
+}
+
+class ObjectWithPrivatePublishedAndIsser
+{
+    public function __construct(
+        private bool $published,
+    ) {
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->published;
+    }
+}
+
+class ObjectWithIsserAndPublicPropertyNoGetter
+{
+    public string $published;
+
+    public function __construct(
+        private bool $isPublished,
+        string $published,
+    ) {
+        $this->published = $published;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->isPublished;
+    }
+}
+
 class ObjectWithMethodSameNameThanProperty
 {
     public function __construct(
@@ -1779,5 +1989,22 @@ class ObjectWithIgnoredMethodSameNameAsPropertyWithGroups
     public function visibleGroup()
     {
         return $this->visibleGroup;
+    }
+}
+
+class NameConverterTestDummy
+{
+    public function __construct(
+        public readonly int $someCamelCaseProperty = 0,
+    ) {
+    }
+}
+
+class NameConverterTestDummyMultiple
+{
+    public function __construct(
+        public readonly int $someCamelCaseProperty = 0,
+        public readonly int $anotherProperty = 0,
+    ) {
     }
 }
