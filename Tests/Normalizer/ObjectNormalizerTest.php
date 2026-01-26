@@ -1343,6 +1343,15 @@ class ObjectNormalizerTest extends TestCase
         $this->assertArrayNotHasKey('neverProperty', $normalized);
         $this->assertEquals('value', $normalized['normalProperty']);
     }
+
+    public function testMetadataIsAppliedToTheRightValue()
+    {
+        $obj = new ObjectWithMetadata();
+        $normalizer = new ObjectNormalizer(new ClassMetadataFactory(new AttributeLoader()));
+        $normalized = $normalizer->normalize($obj);
+
+        $this->assertSame(['name' => 'John', 'foo' => 42, 'hello' => 'Hello i am John'], $normalized);
+    }
 }
 
 class ProxyObjectDummy extends ObjectDummy
@@ -1981,5 +1990,38 @@ class NameConverterTestDummyMultiple
         public readonly int $someCamelCaseProperty = 0,
         public readonly int $anotherProperty = 0,
     ) {
+    }
+}
+
+class ObjectWithMetadata
+{
+    private int $foo;
+    private string $name;
+
+    public function __construct()
+    {
+        $this->foo = 42;
+        $this->name = 'John';
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getFoo(): int
+    {
+        return $this->foo;
+    }
+
+    #[Ignore]
+    public function isEqualTo(self $test): bool
+    {
+        return $this->name === $test->getName();
+    }
+
+    public function getHello(): string
+    {
+        return 'Hello i am '.$this->getName();
     }
 }
