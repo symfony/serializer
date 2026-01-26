@@ -163,7 +163,7 @@ class AttributeLoader implements LoaderInterface
 
                     $attributeMetadata->setSerializedPath($attribute->getSerializedPath());
                 } elseif ($attribute instanceof Ignore) {
-                    if (!$attributeMetadata) {
+                    if ($attributeMetadata) {
                         $attributeMetadata->setIgnore(true);
                     }
                 } elseif ($attribute instanceof Context) {
