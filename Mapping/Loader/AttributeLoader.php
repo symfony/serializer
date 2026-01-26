@@ -149,6 +149,7 @@ class AttributeLoader implements LoaderInterface
             $attributeName = $this->getAttributeNameFromAccessor($reflectionClass, $method, true);
             $accessorOrMutator = null !== $attributeName;
             $hasProperty = $this->hasPropertyForAccessor($method->getDeclaringClass(), $name);
+            $attributeMetadata = null;
 
             if ($hasProperty || $accessorOrMutator) {
                 if (null === $attributeName || 's' !== $name[0] && $hasProperty && $this->hasAttributeNameCollision($reflectionClass, $attributeName, $name)) {
@@ -165,7 +166,7 @@ class AttributeLoader implements LoaderInterface
 
             foreach ($this->loadAttributes($method) as $attribute) {
                 if ($attribute instanceof Groups) {
-                    if (!$accessorOrMutator && !$hasProperty) {
+                    if (!$attributeMetadata) {
                         throw new MappingException(\sprintf('Groups on "%s::%s()" cannot be added. Groups can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
                     }
 
@@ -173,27 +174,29 @@ class AttributeLoader implements LoaderInterface
                         $attributeMetadata->addGroup($group);
                     }
                 } elseif ($attribute instanceof MaxDepth) {
-                    if (!$accessorOrMutator && !$hasProperty) {
+                    if (!$attributeMetadata) {
                         throw new MappingException(\sprintf('MaxDepth on "%s::%s()" cannot be added. MaxDepth can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
                     }
 
                     $attributeMetadata->setMaxDepth($attribute->maxDepth);
                 } elseif ($attribute instanceof SerializedName) {
-                    if (!$accessorOrMutator && !$hasProperty) {
+                    if (!$attributeMetadata) {
                         throw new MappingException(\sprintf('SerializedName on "%s::%s()" cannot be added. SerializedName can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
                     }
 
                     $attributeMetadata->setSerializedName($attribute->serializedName);
                 } elseif ($attribute instanceof SerializedPath) {
-                    if (!$accessorOrMutator && !$hasProperty) {
+                    if (!$attributeMetadata) {
                         throw new MappingException(\sprintf('SerializedPath on "%s::%s()" cannot be added. SerializedPath can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
                     }
 
                     $attributeMetadata->setSerializedPath($attribute->serializedPath);
                 } elseif ($attribute instanceof Ignore) {
-                    $attributeMetadata->setIgnore(true);
+                    if ($attributeMetadata) {
+                        $attributeMetadata->setIgnore(true);
+                    }
                 } elseif ($attribute instanceof Context) {
-                    if (!$accessorOrMutator && !$hasProperty) {
+                    if (!$attributeMetadata) {
                         throw new MappingException(\sprintf('Context on "%s::%s()" cannot be added. Context can only be added on methods beginning with "get", "is", "has", "can" or "set".', $className, $method->name));
                     }
 
