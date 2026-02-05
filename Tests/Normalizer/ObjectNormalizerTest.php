@@ -727,6 +727,13 @@ class ObjectNormalizerTest extends TestCase
         $this->assertEquals(['foo' => 'K'], $this->normalizer->normalize(new ObjectWithStaticPropertiesAndMethods()));
     }
 
+    public function testNormalizeStaticWithGroups()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $this->createNormalizer([], $classMetadataFactory);
+        $this->assertEquals(['baz' => 'L'], $this->normalizer->normalize(new ObjectWithStaticMethodWithGroups(), null, [AbstractNormalizer::GROUPS => ['test']]));
+    }
+
     public function testNormalizeUpperCaseAttributes()
     {
         $this->assertEquals(['Foo' => 'Foo', 'Bar' => 'BarBar'], $this->normalizer->normalize(new ObjectWithUpperCaseAttributeNames()));
@@ -1483,6 +1490,15 @@ class ObjectWithStaticPropertiesAndMethods
     public $foo = 'K';
     public static $bar = 'A';
 
+    public static function getBaz()
+    {
+        return 'L';
+    }
+}
+
+class ObjectWithStaticMethodWithGroups
+{
+    #[Groups('test')]
     public static function getBaz()
     {
         return 'L';
