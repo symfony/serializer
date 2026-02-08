@@ -403,7 +403,7 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
             } catch (PropertyAccessInvalidArgumentException $e) {
                 $exception = NotNormalizableValueException::createForUnexpectedDataType(
                     \sprintf('Failed to denormalize attribute "%s" value for class "%s": '.$e->getMessage(), $attribute, $resolvedClass),
-                    $data,
+                    $value,
                     $e instanceof InvalidTypeException ? [$e->expectedType] : ['unknown'],
                     $attributeContext['deserialization_path'] ?? null,
                     false,

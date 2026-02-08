@@ -13,6 +13,7 @@ namespace Symfony\Component\Serializer\Tests\Normalizer;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyPath;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
@@ -1439,6 +1440,41 @@ class AbstractObjectNormalizerTest extends TestCase
         $this->assertSame('dummy', $denormalizedData->value->type);
         $this->assertSame('dummy', $denormalizedData->values[0]->type);
     }
+
+    public function testNotNormalizableValueExceptionCurrentTypeUsesAttributeValue()
+    {
+        $serializer = new Serializer([new ObjectNormalizer(propertyAccessor: PropertyAccess::createPropertyAccessor())]);
+
+        $this->expectException(NotNormalizableValueException::class);
+        $this->expectExceptionMessage('bool');
+
+        try {
+            $serializer->denormalize(['field' => ['value']], DummyBoolField::class);
+        } catch (NotNormalizableValueException $e) {
+            $this->assertSame('array', $e->getCurrentType());
+
+            throw $e;
+        }
+    }
+
+    public function testNotNormalizableValueExceptionCurrentTypeUsesSetterValueAfterCallbacks()
+    {
+        $serializer = new Serializer([new ObjectNormalizer(propertyAccessor: PropertyAccess::createPropertyAccessor())]);
+
+        $this->expectException(NotNormalizableValueException::class);
+
+        try {
+            $serializer->denormalize(['field' => '123'], DummyIntField::class, null, [
+                AbstractNormalizer::CALLBACKS => [
+                    'field' => static fn () => null,
+                ],
+            ]);
+        } catch (NotNormalizableValueException $e) {
+            $this->assertSame('null', $e->getCurrentType());
+
+            throw $e;
+        }
+    }
 }
 
 class AbstractObjectNormalizerDummy extends AbstractObjectNormalizer
@@ -1972,4 +2008,14 @@ class DummyGenericsValueWrapper
     public mixed $value;
     /** @var T[] */
     public array $values;
+}
+
+class DummyBoolField
+{
+    public bool $field;
+}
+
+class DummyIntField
+{
+    public int $field;
 }
