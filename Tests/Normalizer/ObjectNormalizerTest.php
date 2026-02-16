@@ -12,6 +12,9 @@
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\IgnoreDeprecations;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\Exception\InvalidTypeException;
 use Symfony\Component\PropertyAccess\PropertyAccessorBuilder;
@@ -19,6 +22,9 @@ use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
+use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
+use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
+use Symfony\Component\PropertyInfo\Type as LegacyType;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Symfony\Component\Serializer\Exception\ExtraAttributesException;
@@ -37,6 +43,7 @@ use Symfony\Component\Serializer\NameConverter\MetadataAwareNameConverter;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
@@ -310,6 +317,134 @@ class ObjectNormalizerTest extends TestCase
         $obj = $normalizer->denormalize($data, ObjectConstructorDummy::class, 'any');
         $this->assertEquals('foo', $obj->getFoo());
         $this->assertEquals('bar', $obj->bar);
+    }
+
+    #[RequiresMethod(Type::class, 'list')]
+    public function testConstructorParameterTypeIsUsedWhenPropertyTypeExtractorReturnsDifferentType()
+    {
+        $propertyInfoExtractor = new class implements PropertyInfoExtractorInterface {
+            public function getType(string $class, string $property, array $context = []): ?Type
+            {
+                if (SerializerConstructorTypeConversionDummy::class === $class && 'attributes' === $property) {
+                    return Type::list(Type::string());
+                }
+
+                return null;
+            }
+
+            public function getTypes(string $class, string $property, array $context = []): ?array
+            {
+                return null;
+            }
+
+            public function getProperties(string $class, array $context = []): ?array
+            {
+                return null;
+            }
+
+            public function isReadable(string $class, string $property, array $context = []): ?bool
+            {
+                return null;
+            }
+
+            public function isWritable(string $class, string $property, array $context = []): ?bool
+            {
+                return !(SerializerConstructorTypeConversionDummy::class === $class && 'attributes' === $property);
+            }
+
+            public function getShortDescription(string $class, string $property, array $context = []): ?string
+            {
+                return null;
+            }
+
+            public function getLongDescription(string $class, string $property, array $context = []): ?string
+            {
+                return null;
+            }
+        };
+
+        $normalizer = new ObjectNormalizer(null, null, null, $propertyInfoExtractor, null, null, [], $propertyInfoExtractor);
+        $serializer = new Serializer([$normalizer]);
+        $normalizer->setSerializer($serializer);
+
+        $obj = $normalizer->denormalize(
+            ['attributes' => 'displayName,userName'],
+            SerializerConstructorTypeConversionDummy::class,
+            'csv',
+            [DenormalizerInterface::COLLECT_DENORMALIZATION_ERRORS => true]
+        );
+
+        $this->assertInstanceOf(SerializerConstructorTypeConversionDummy::class, $obj);
+        $this->assertFalse($obj->isAttributeAllowed('displayName'));
+        $this->assertFalse($obj->isAttributeAllowed('userName'));
+    }
+
+    #[Group('legacy')]
+    #[IgnoreDeprecations]
+    public function testConstructorParameterTypeIsUsedWhenLegacyPropertyTypeExtractorReturnsDifferentType()
+    {
+        $propertyTypeExtractor = new class implements PropertyTypeExtractorInterface {
+            public function getTypes(string $class, string $property, array $context = []): ?array
+            {
+                if (SerializerConstructorTypeConversionDummy::class === $class && 'attributes' === $property) {
+                    return [new LegacyType(LegacyType::BUILTIN_TYPE_ARRAY, false, null, true, new LegacyType(LegacyType::BUILTIN_TYPE_INT), new LegacyType(LegacyType::BUILTIN_TYPE_STRING))];
+                }
+
+                return null;
+            }
+        };
+
+        $propertyInfoExtractor = new class implements PropertyInfoExtractorInterface {
+            public function getType(string $class, string $property, array $context = []): ?Type
+            {
+                return null;
+            }
+
+            public function getTypes(string $class, string $property, array $context = []): ?array
+            {
+                return null;
+            }
+
+            public function getProperties(string $class, array $context = []): ?array
+            {
+                return null;
+            }
+
+            public function isReadable(string $class, string $property, array $context = []): ?bool
+            {
+                return null;
+            }
+
+            public function isWritable(string $class, string $property, array $context = []): ?bool
+            {
+                return !(SerializerConstructorTypeConversionDummy::class === $class && 'attributes' === $property);
+            }
+
+            public function getShortDescription(string $class, string $property, array $context = []): ?string
+            {
+                return null;
+            }
+
+            public function getLongDescription(string $class, string $property, array $context = []): ?string
+            {
+                return null;
+            }
+        };
+
+        $normalizer = new ObjectNormalizer(null, null, null, $propertyTypeExtractor, null, null, [], $propertyInfoExtractor);
+        $serializer = new Serializer([$normalizer]);
+        $normalizer->setSerializer($serializer);
+
+        $obj = $normalizer->denormalize(
+            ['attributes' => 'displayName,userName'],
+            SerializerConstructorTypeConversionDummy::class,
+            'csv',
+            [DenormalizerInterface::COLLECT_DENORMALIZATION_ERRORS => true]
+        );
+
+        $this->assertInstanceOf(SerializerConstructorTypeConversionDummy::class, $obj);
+        $this->assertFalse($obj->isAttributeAllowed('displayName'));
+        $this->assertFalse($obj->isAttributeAllowed('userName'));
     }
 
     public function testConstructorWithObjectTypeHintDenormalize()
@@ -2036,6 +2171,22 @@ class NameConverterTestDummyMultiple
         public readonly int $someCamelCaseProperty = 0,
         public readonly int $anotherProperty = 0,
     ) {
+    }
+}
+
+class SerializerConstructorTypeConversionDummy
+{
+    /** @var list<string> */
+    private array $attributes;
+
+    public function __construct(string $attributes = '')
+    {
+        $this->attributes = $attributes ? explode(',', $attributes) : [];
+    }
+
+    public function isAttributeAllowed(string $attribute): bool
+    {
+        return !\in_array($attribute, $this->attributes, true);
     }
 }
 
