@@ -14,10 +14,12 @@ namespace Symfony\Component\Serializer\Tests\Normalizer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccessorBuilder;
+use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
+use Symfony\Component\PropertyInfo\PropertyInfoExtractorInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Symfony\Component\Serializer\Exception\ExtraAttributesException;
@@ -182,6 +184,29 @@ class ObjectNormalizerTest extends TestCase
             ['foo' => 123, 'bar' => null],
             $this->normalizer->normalize($obj, 'any')
         );
+    }
+
+    public function testNormalizeWithDisabledMagicMethodsExtractionInContext()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $propertyInfoExtractor = $this->createMock(PropertyInfoExtractorInterface::class);
+        $propertyInfoExtractor
+            ->expects($this->once())
+            ->method('isReadable')
+            ->with(ObjectWithGroupedMagicGetPrivateProperty::class, 'foo', ['enable_magic_methods_extraction' => 0])
+            ->willReturn(false);
+        $propertyAccessor = $this->createMock(PropertyAccessorInterface::class);
+        $propertyAccessor
+            ->expects($this->once())
+            ->method('isReadable')
+            ->with($this->isInstanceOf(ObjectWithGroupedMagicGetPrivateProperty::class), 'foo')
+            ->willReturn(false);
+        $normalizer = new ObjectNormalizer($classMetadataFactory, null, $propertyAccessor, null, null, null, [], $propertyInfoExtractor);
+
+        $this->assertSame([], $normalizer->normalize(new ObjectWithGroupedMagicGetPrivateProperty(), null, [
+            'groups' => ['read'],
+            'enable_magic_methods_extraction' => 0,
+        ]));
     }
 
     public function testNormalizeObjectWithUninitializedPrivateProperties()
@@ -1546,6 +1571,17 @@ class LazyObjectInner extends ObjectInner
     public function __isset($name): bool
     {
         return 'foo' === $name;
+    }
+}
+
+class ObjectWithGroupedMagicGetPrivateProperty
+{
+    #[Groups(['read'])]
+    private string $foo = 'foo';
+
+    public function __get($name)
+    {
+        return 'foo';
     }
 }
 
