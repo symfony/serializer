@@ -18,6 +18,7 @@ use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\Extractor\PhpStanExtractor;
 use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
+use Symfony\Component\PropertyInfo\PropertyTypeExtractorInterface;
 use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Attribute\DiscriminatorMap;
 use Symfony\Component\Serializer\Attribute\SerializedName;
@@ -63,6 +64,7 @@ use Symfony\Component\Serializer\Tests\Fixtures\DummyWithObjectOrNull;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyWithStringObject;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\ObjectDummyWithContextAttribute;
 use Symfony\Component\TypeInfo\Type;
+use Symfony\Component\TypeInfo\TypeResolver\ReflectionTypeResolver;
 
 class AbstractObjectNormalizerTest extends TestCase
 {
@@ -915,6 +917,25 @@ class AbstractObjectNormalizerTest extends TestCase
 
         $normalized = $serializer->normalize(new DummyWithEnumUnion(EnumB::B));
         $this->assertEquals(new DummyWithEnumUnion(EnumB::B), $serializer->denormalize($normalized, DummyWithEnumUnion::class));
+    }
+
+    public function testDenormalizeUsesConstructorUnionTypeWhenExtractorIsLessPrecise()
+    {
+        $extractor = new class implements PropertyTypeExtractorInterface {
+            public function getType(string $class, string $property, array $context = []): ?Type
+            {
+                return Type::string();
+            }
+
+            public function getTypes(string $class, string $property, array $context = []): ?array
+            {
+                return null;
+            }
+        };
+
+        $serializer = new Serializer([new ObjectNormalizer(propertyTypeExtractor: $extractor)]);
+
+        $this->assertEquals(new DummyWithIntOrString(1), $serializer->denormalize(['value' => 1], DummyWithIntOrString::class));
     }
 
     public function testDenormalizeWithNumberAsSerializedNameAndNoArrayReindex()
@@ -1876,6 +1897,14 @@ class DummyWithEnumUnion
 {
     public function __construct(
         public readonly EnumA|EnumB $enum,
+    ) {
+    }
+}
+
+class DummyWithIntOrString
+{
+    public function __construct(
+        public readonly int|string $value,
     ) {
     }
 }

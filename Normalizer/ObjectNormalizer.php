@@ -137,16 +137,18 @@ final class ObjectNormalizer extends AbstractObjectNormalizer
         }
 
         if ($context['_read_attributes'] ?? true) {
-            if (!isset(self::$isReadableCache[$class.$attribute])) {
-                self::$isReadableCache[$class.$attribute] = $this->propertyInfoExtractor->isReadable($class, $attribute) || $this->hasAttributeAccessorMethod($class, $attribute) || (\is_object($classOrObject) && $this->propertyAccessor->isReadable($classOrObject, $attribute));
-            }
+            $context = array_intersect_key($context, ['enable_getter_setter_extraction' => true, 'enable_magic_methods_extraction' => true]);
+            $cacheKey = $class.$attribute.hash('xxh128', serialize($context));
 
-            return self::$isReadableCache[$class.$attribute];
+            return self::$isReadableCache[$cacheKey] ??= $this->propertyInfoExtractor->isReadable($class, $attribute, $context) || $this->hasAttributeAccessorMethod($class, $attribute) || (\is_object($classOrObject) && $this->propertyAccessor->isReadable($classOrObject, $attribute));
         }
 
-        return self::$isWritableCache[$class.$attribute] ??= str_contains($attribute, '.')
-            || $this->propertyInfoExtractor->isWritable($class, $attribute)
-            || !\in_array($this->writeInfoExtractor->getWriteInfo($class, $attribute)?->getType(), [null, PropertyWriteInfo::TYPE_NONE, PropertyWriteInfo::TYPE_PROPERTY], true);
+        $context = array_intersect_key($context, ['enable_getter_setter_extraction' => true, 'enable_magic_methods_extraction' => true, 'enable_constructor_extraction' => true, 'enable_adder_remover_extraction' => true]);
+        $cacheKey = $class.$attribute.hash('xxh128', serialize($context));
+
+        return self::$isWritableCache[$cacheKey] ??= str_contains($attribute, '.')
+            || $this->propertyInfoExtractor->isWritable($class, $attribute, $context)
+            || !\in_array($this->writeInfoExtractor->getWriteInfo($class, $attribute, $context)?->getType(), [null, PropertyWriteInfo::TYPE_NONE, PropertyWriteInfo::TYPE_PROPERTY], true);
     }
 
     private function hasAttributeAccessorMethod(string $class, string $attribute): bool

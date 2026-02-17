@@ -43,6 +43,7 @@ use Symfony\Component\TypeInfo\Type\ObjectType;
 use Symfony\Component\TypeInfo\Type\UnionType;
 use Symfony\Component\TypeInfo\Type\WrappingTypeInterface;
 use Symfony\Component\TypeInfo\TypeIdentifier;
+use Symfony\Component\TypeInfo\TypeResolver\ReflectionTypeResolver;
 
 /**
  * Base class for a normalizer dealing with objects.
@@ -699,6 +700,33 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
     {
         if ($parameter->isVariadic() || null === $this->propertyTypeExtractor || null === $type = $this->getType($class->getName(), $parameterName)) {
             return parent::denormalizeParameter($class, $parameter, $parameterName, $parameterData, $context, $format);
+        }
+
+        $parameterType = $parameter->getType();
+        static $parameterTypeResolver;
+
+        if (null !== $parameterType && $parameterTypeResolver ??= class_exists(ReflectionTypeResolver::class) ? new ReflectionTypeResolver() : false) {
+            $resolvedParameterType = $parameterTypeResolver->resolve($parameterType);
+            if ($resolvedParameterType->isSatisfiedBy(static fn (Type $t) => match (true) {
+                $t instanceof BuiltinType => !$type->isIdentifiedBy($t->getTypeIdentifier()),
+                $t instanceof ObjectType => !$type->isIdentifiedBy($t->getClassName()),
+                default => false,
+            })) {
+                $type = $resolvedParameterType;
+            }
+        } elseif ($parameterType instanceof \ReflectionNamedType) {
+            if ($parameterType->isBuiltin()) {
+                $typeIdentifier = TypeIdentifier::tryFrom($parameterType->getName());
+
+                if (null !== $typeIdentifier && !$type->isIdentifiedBy($typeIdentifier)) {
+                    $type = Type::builtin($typeIdentifier);
+                }
+            } elseif (!$type->isIdentifiedBy($parameterType->getName())) {
+                $type = Type::object($parameterType->getName());
+            }
+            if ($parameter->allowsNull()) {
+                $type = Type::nullable($type);
+            }
         }
 
         $parameterData = $this->validateAndDenormalize($type, $class->getName(), $parameterName, $parameterData, $format, $context);
