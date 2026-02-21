@@ -12,6 +12,7 @@
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\PropertyInfo\Type;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
 use Symfony\Component\Serializer\Normalizer\BackedEnumNormalizer;
@@ -151,5 +152,23 @@ class BackedEnumNormalizerTest extends TestCase
         ];
 
         $this->normalizer->denormalize('invalid-value', StringBackedEnumDummy::class, null, $context);
+    }
+
+    public function testDenormalizeInvalidValueInConstructorContextThrowsPathAwareNotNormalizableValueException()
+    {
+        try {
+            $this->normalizer->denormalize('invalid-value', StringBackedEnumDummy::class, null, [
+                'has_constructor' => true,
+                'deserialization_path' => 'get',
+            ]);
+
+            self::fail(\sprintf('Failed asserting that exception of type "%s" is thrown.', NotNormalizableValueException::class));
+        } catch (NotNormalizableValueException $e) {
+            $this->assertSame('get', $e->getPath());
+            $this->assertSame('string', $e->getCurrentType());
+            $this->assertSame([Type::BUILTIN_TYPE_INT, Type::BUILTIN_TYPE_STRING], $e->getExpectedTypes());
+            $this->assertTrue($e->canUseMessageForUser());
+            $this->assertSame('The data must belong to a backed enumeration of type '.StringBackedEnumDummy::class, $e->getMessage());
+        }
     }
 }

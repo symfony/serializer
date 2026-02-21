@@ -321,7 +321,6 @@ abstract class AbstractNormalizer implements NormalizerInterface, DenormalizerIn
 
         $constructor = $this->getConstructor($data, $class, $context, $reflectionClass, $allowedAttributes);
         if ($constructor) {
-            $context['has_constructor'] = true;
             if (true !== $constructor->isPublic()) {
                 return $reflectionClass->newInstanceWithoutConstructor();
             }
@@ -451,8 +450,6 @@ abstract class AbstractNormalizer implements NormalizerInterface, DenormalizerIn
                 return $reflectionClass->newInstanceWithoutConstructor();
             }
         }
-
-        unset($context['has_constructor']);
 
         if (!$reflectionClass->isInstantiable()) {
             throw NotNormalizableValueException::createForUnexpectedDataType(\sprintf('Failed to create object because the class "%s" is not instantiable.', $class), $data, ['unknown'], $context['deserialization_path'] ?? null);
