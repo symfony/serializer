@@ -69,10 +69,6 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
         try {
             return $type::from($data);
         } catch (\ValueError|\TypeError $e) {
-            if (isset($context['has_constructor'])) {
-                throw new InvalidArgumentException('The data must belong to a backed enumeration of type '.$type, 0, $e);
-            }
-
             if ($allowInvalidValues && !isset($context['not_normalizable_value_exceptions'])) {
                 return null;
             }
@@ -83,15 +79,7 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
                 throw NotNormalizableValueException::createForUnexpectedDataType('The data must be of type '.$backingType, $data, [$backingType], $context['deserialization_path'] ?? null, true, 0, $e);
             }
 
-            $expectedValues = array_map(static function ($type) {
-                if (\is_string($type->value)) {
-                    return "'{$type->value}'";
-                }
-
-                return $type->value;
-            }, $type::cases());
-
-            throw new NotNormalizableValueException('The data must be one of the following values: '.implode(', ', $expectedValues), 0, $e, $type, null, $context['deserialization_path'] ?? null, true);
+            throw NotNormalizableValueException::createForUnexpectedDataType('The data must belong to a backed enumeration of type '.$type, $data, ['int', 'string'], $context['deserialization_path'] ?? null, true, 0, $e);
         }
     }
 

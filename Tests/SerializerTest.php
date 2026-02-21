@@ -1545,16 +1545,16 @@ class SerializerTest extends TestCase
 
         $expected = [
             [
-                'currentType' => StringBackedEnumDummy::class,
+                'currentType' => 'string',
                 'useMessageForUser' => true,
-                'message' => "The data must be one of the following values: 'GET', 'OPTIONS'",
+                'message' => 'The data must belong to a backed enumeration of type '.StringBackedEnumDummy::class,
             ],
         ];
 
         $this->assertSame($expected, $exceptionsAsArray);
     }
 
-    public function testNoCollectDenormalizationErrorsWithWrongEnumOnConstructor()
+    public function testCollectDenormalizationErrorsWithWrongEnumOnConstructor()
     {
         $serializer = new Serializer(
             [
@@ -1568,9 +1568,23 @@ class SerializerTest extends TestCase
             $serializer->deserialize('{"get": "POST"}', DummyObjectWithEnumConstructor::class, 'json', [
                 DenormalizerInterface::COLLECT_DENORMALIZATION_ERRORS => true,
             ]);
-        } catch (\Throwable $th) {
-            $this->assertNotInstanceOf(PartialDenormalizationException::class, $th);
-            $this->assertInstanceOf(InvalidArgumentException::class, $th);
+            self::fail(\sprintf('Failed asserting that exception of type "%s" is thrown.', PartialDenormalizationException::class));
+        } catch (PartialDenormalizationException $e) {
+            $exceptionsAsArray = array_map(static fn (NotNormalizableValueException $error): array => [
+                'currentType' => $error->getCurrentType(),
+                'path' => $error->getPath(),
+                'useMessageForUser' => $error->canUseMessageForUser(),
+                'message' => $error->getMessage(),
+            ], $e->getErrors());
+
+            $this->assertSame([
+                [
+                    'currentType' => 'string',
+                    'path' => 'get',
+                    'useMessageForUser' => true,
+                    'message' => 'The data must belong to a backed enumeration of type Symfony\Component\Serializer\Tests\Fixtures\StringBackedEnumDummy',
+                ],
+            ], $exceptionsAsArray);
         }
     }
 

@@ -103,7 +103,7 @@ class BackedEnumNormalizerTest extends TestCase
     public function testDenormalizeInvalidIntegerBackedValueThrowsException()
     {
         $this->expectException(NotNormalizableValueException::class);
-        $this->expectExceptionMessage('The data must be one of the following values: 200, 404');
+        $this->expectExceptionMessage('The data must belong to a backed enumeration of type '.IntegerBackedEnumDummy::class);
 
         $this->normalizer->denormalize(300, IntegerBackedEnumDummy::class);
     }
@@ -111,35 +111,9 @@ class BackedEnumNormalizerTest extends TestCase
     public function testDenormalizeInvalidStringBackedValueThrowsException()
     {
         $this->expectException(NotNormalizableValueException::class);
-        $this->expectExceptionMessage("The data must be one of the following values: 'GET', 'OPTIONS'");
+        $this->expectExceptionMessage('The data must belong to a backed enumeration of type '.StringBackedEnumDummy::class);
 
         $this->normalizer->denormalize('POST', StringBackedEnumDummy::class);
-    }
-
-    public function testDenormalizeInvalidBackedValueWithAllowInvalidAndCollectErrorsThrows()
-    {
-        $this->expectException(NotNormalizableValueException::class);
-        $this->expectExceptionMessage("The data must be one of the following values: 'GET', 'OPTIONS'");
-
-        $context = [
-            BackedEnumNormalizer::ALLOW_INVALID_VALUES => true,
-            'not_normalizable_value_exceptions' => [],
-        ];
-
-        $this->normalizer->denormalize('invalid-value', StringBackedEnumDummy::class, null, $context);
-    }
-
-    public function testDenormalizeNullWithAllowInvalidAndCollectErrorsThrows()
-    {
-        $this->expectException(NotNormalizableValueException::class);
-        $this->expectExceptionMessage('The data is neither an integer nor a string');
-
-        $context = [
-            BackedEnumNormalizer::ALLOW_INVALID_VALUES => true,
-            'not_normalizable_value_exceptions' => [], // Indicate that we want to collect errors
-        ];
-
-        $this->normalizer->denormalize(null, StringBackedEnumDummy::class, null, $context);
     }
 
     public function testNormalizeShouldThrowExceptionForNonEnumObjects()
@@ -176,5 +150,49 @@ class BackedEnumNormalizerTest extends TestCase
         $this->assertNull($this->normalizer->denormalize(null, StringBackedEnumDummy::class, null, [BackedEnumNormalizer::ALLOW_INVALID_VALUES => true]));
 
         $this->assertSame(StringBackedEnumDummy::GET, $this->normalizer->denormalize('GET', StringBackedEnumDummy::class, null, [BackedEnumNormalizer::ALLOW_INVALID_VALUES => true]));
+    }
+
+    public function testDenormalizeNullWithAllowInvalidAndCollectErrorsThrows()
+    {
+        $this->expectException(NotNormalizableValueException::class);
+        $this->expectExceptionMessage('The data is neither an integer nor a string');
+
+        $context = [
+            BackedEnumNormalizer::ALLOW_INVALID_VALUES => true,
+            'not_normalizable_value_exceptions' => [], // Indicate that we want to collect errors
+        ];
+
+        $this->normalizer->denormalize(null, StringBackedEnumDummy::class, null, $context);
+    }
+
+    public function testDenormalizeInvalidValueWithAllowInvalidAndCollectErrorsThrows()
+    {
+        $this->expectException(NotNormalizableValueException::class);
+        $this->expectExceptionMessage('The data must belong to a backed enumeration of type');
+
+        $context = [
+            BackedEnumNormalizer::ALLOW_INVALID_VALUES => true,
+            'not_normalizable_value_exceptions' => [],
+        ];
+
+        $this->normalizer->denormalize('invalid-value', StringBackedEnumDummy::class, null, $context);
+    }
+
+    public function testDenormalizeInvalidValueInConstructorContextThrowsPathAwareNotNormalizableValueException()
+    {
+        try {
+            $this->normalizer->denormalize('invalid-value', StringBackedEnumDummy::class, null, [
+                'has_constructor' => true,
+                'deserialization_path' => 'get',
+            ]);
+
+            self::fail(\sprintf('Failed asserting that exception of type "%s" is thrown.', NotNormalizableValueException::class));
+        } catch (NotNormalizableValueException $e) {
+            $this->assertSame('get', $e->getPath());
+            $this->assertSame('string', $e->getCurrentType());
+            $this->assertSame(['int', 'string'], $e->getExpectedTypes());
+            $this->assertTrue($e->canUseMessageForUser());
+            $this->assertSame('The data must belong to a backed enumeration of type '.StringBackedEnumDummy::class, $e->getMessage());
+        }
     }
 }
