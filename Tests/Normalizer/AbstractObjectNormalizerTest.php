@@ -65,7 +65,6 @@ use Symfony\Component\Serializer\Tests\Fixtures\DummyWithObjectOrNull;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyWithStringObject;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\ObjectDummyWithContextAttribute;
 use Symfony\Component\TypeInfo\Type;
-use Symfony\Component\TypeInfo\TypeResolver\ReflectionTypeResolver;
 
 class AbstractObjectNormalizerTest extends TestCase
 {
