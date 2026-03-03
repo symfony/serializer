@@ -1014,7 +1014,7 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
         if (null !== $parameterType && $parameterTypeResolver ??= class_exists(ReflectionTypeResolver::class) ? new ReflectionTypeResolver() : false) {
             $resolvedParameterType = $parameterTypeResolver->resolve($parameterType);
             if ($resolvedParameterType->isSatisfiedBy(static fn (Type $t) => match (true) {
-                $t instanceof BuiltinType => !$type->isIdentifiedBy($t->getTypeIdentifier()),
+                $t instanceof BuiltinType && TypeIdentifier::NULL !== $t->getTypeIdentifier() => !$type->isIdentifiedBy($t->getTypeIdentifier()),
                 $t instanceof ObjectType => !$type->isIdentifiedBy($t->getClassName()),
                 default => false,
             })) {
