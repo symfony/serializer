@@ -400,6 +400,39 @@ class ObjectNormalizerTest extends TestCase
         $this->assertFalse($obj->isAttributeAllowed('userName'));
     }
 
+    public function testCollectionPropertyTypeNotOverriddenByNullableConstructorParameterType()
+    {
+        $extractor = new class implements PropertyTypeExtractorInterface {
+            public function getTypes(string $class, string $property, array $context = []): ?array
+            {
+                return null;
+            }
+
+            public function getType(string $class, string $property, array $context = []): ?Type
+            {
+                if (NullableArrayWithObjectsDummy::class === $class && 'items' === $property) {
+                    return Type::array(Type::object(NullableArrayItemDummy::class));
+                }
+
+                return null;
+            }
+        };
+
+        $normalizer = new ObjectNormalizer(null, null, null, $extractor);
+        $serializer = new Serializer([new ArrayDenormalizer(), $normalizer]);
+        $normalizer->setSerializer($serializer);
+
+        $obj = $normalizer->denormalize(
+            ['items' => [['name' => 'foo']]],
+            NullableArrayWithObjectsDummy::class,
+        );
+
+        $this->assertInstanceOf(NullableArrayWithObjectsDummy::class, $obj);
+        $this->assertCount(1, $obj->items);
+        $this->assertInstanceOf(NullableArrayItemDummy::class, $obj->items[0]);
+        $this->assertSame('foo', $obj->items[0]->name);
+    }
+
     public function testConstructorWithObjectTypeHintDenormalize()
     {
         $data = [
@@ -2179,5 +2212,22 @@ class ObjectWithMetadata
     public function getHello(): string
     {
         return 'Hello i am '.$this->getName();
+    }
+}
+
+class NullableArrayWithObjectsDummy
+{
+    public function __construct(
+        /** @var NullableArrayItemDummy[] */
+        public ?array $items = null,
+    ) {
+    }
+}
+
+class NullableArrayItemDummy
+{
+    public function __construct(
+        public string $name,
+    ) {
     }
 }
