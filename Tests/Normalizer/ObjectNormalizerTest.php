@@ -48,6 +48,7 @@ use Symfony\Component\Serializer\Tests\Fixtures\CircularReferenceDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyPrivatePropertyWithoutGetter;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyWithUnion;
 use Symfony\Component\Serializer\Tests\Fixtures\FormatAndContextAwareNormalizer;
+use Symfony\Component\Serializer\Tests\Fixtures\MagicSetDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\OtherSerializedNameDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Php74Dummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Php74DummyPrivate;
@@ -726,6 +727,19 @@ class ObjectNormalizerTest extends TestCase
             new ObjectDummy(),
             $this->normalizer->denormalize(['non_existing' => true], ObjectDummy::class)
         );
+    }
+
+    public function testDenormalizeMagicSet()
+    {
+        $obj = $this->normalizer->denormalize(
+            ['param1' => 'test', 'param2' => 42],
+            MagicSetDummy::class,
+            'any',
+            [AbstractNormalizer::ALLOW_EXTRA_ATTRIBUTES => true]
+        );
+
+        $this->assertSame('test', $obj->params['param1']);
+        $this->assertSame(42, $obj->params['param2']);
     }
 
     public function testNoTraversableSupport()

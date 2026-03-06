@@ -161,9 +161,18 @@ class ObjectNormalizer extends AbstractObjectNormalizer
         $context = array_intersect_key($context, ['enable_getter_setter_extraction' => true, 'enable_magic_methods_extraction' => true, 'enable_constructor_extraction' => true, 'enable_adder_remover_extraction' => true]);
         $cacheKey = $class.$attribute.hash('xxh128', serialize($context));
 
-        return self::$isWritableCache[$cacheKey] ??= str_contains($attribute, '.')
-            || $this->propertyInfoExtractor->isWritable($class, $attribute, $context)
-            || !\in_array($this->writeInfoExtractor->getWriteInfo($class, $attribute, $context)?->getType(), [null, PropertyWriteInfo::TYPE_NONE, PropertyWriteInfo::TYPE_PROPERTY], true);
+        if (isset(self::$isWritableCache[$cacheKey])) {
+            return self::$isWritableCache[$cacheKey];
+        }
+
+        if (str_contains($attribute, '.') || $this->propertyInfoExtractor->isWritable($class, $attribute, $context)) {
+            return self::$isWritableCache[$cacheKey] = true;
+        }
+
+        $writeType = $this->writeInfoExtractor->getWriteInfo($class, $attribute, $context)?->getType();
+
+        return self::$isWritableCache[$cacheKey] = !\in_array($writeType, [null, PropertyWriteInfo::TYPE_NONE], true)
+            && (PropertyWriteInfo::TYPE_PROPERTY !== $writeType || !property_exists($class, $attribute));
     }
 
     private function hasAttributeAccessorMethod(string $class, string $attribute): bool
