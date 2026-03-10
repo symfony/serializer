@@ -12,6 +12,7 @@
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyPath;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -919,6 +920,19 @@ class AbstractObjectNormalizerTest extends TestCase
         $this->assertEquals(new DummyWithEnumUnion(EnumB::B), $serializer->denormalize($normalized, DummyWithEnumUnion::class));
     }
 
+    public function testDenormalizeSelfConstructorPromotedParameter()
+    {
+        $serializer = new Serializer([
+            new ObjectNormalizer(
+                propertyTypeExtractor: new PropertyInfoExtractor([], [new ReflectionExtractor()]),
+            ),
+        ]);
+
+        $normalized = $serializer->normalize(new DummyWithSelfConstructorPromotedParameter('A', new DummyWithSelfConstructorPromotedParameter('B')));
+        $this->assertEquals(new DummyWithSelfConstructorPromotedParameter('A', new DummyWithSelfConstructorPromotedParameter('B')), $serializer->denormalize($normalized, DummyWithSelfConstructorPromotedParameter::class));
+    }
+
+    #[RequiresMethod(ReflectionTypeResolver::class, 'resolve')]
     public function testDenormalizeUsesConstructorUnionTypeWhenExtractorIsLessPrecise()
     {
         $extractor = new class implements PropertyTypeExtractorInterface {
@@ -1897,6 +1911,15 @@ class DummyWithEnumUnion
 {
     public function __construct(
         public readonly EnumA|EnumB $enum,
+    ) {
+    }
+}
+
+class DummyWithSelfConstructorPromotedParameter
+{
+    public function __construct(
+        public readonly string $name,
+        public readonly ?self $partner = null,
     ) {
     }
 }
