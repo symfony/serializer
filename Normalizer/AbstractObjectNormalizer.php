@@ -990,15 +990,22 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
                         $type = [new LegacyType($parameterType->getName(), $parameter->allowsNull())];
                     }
                 } else {
+                    $parameterTypeName = match ($parameterType->getName()) {
+                        'self' => $parameter->getDeclaringClass()?->name ?? $class->name,
+                        'parent' => $parameter->getDeclaringClass()?->getParentClass()?->name ?? $parameterType->getName(),
+                        'static' => $class->name,
+                        default => $parameterType->getName(),
+                    };
+
                     foreach ($type as $legacyType) {
-                        if (LegacyType::BUILTIN_TYPE_OBJECT === $legacyType->getBuiltinType() && $parameterType->getName() === $legacyType->getClassName()) {
+                        if (LegacyType::BUILTIN_TYPE_OBJECT === $legacyType->getBuiltinType() && $parameterTypeName === $legacyType->getClassName()) {
                             $matches = true;
                             break;
                         }
                     }
 
                     if (!$matches) {
-                        $type = [new LegacyType(LegacyType::BUILTIN_TYPE_OBJECT, $parameter->allowsNull(), $parameterType->getName())];
+                        $type = [new LegacyType(LegacyType::BUILTIN_TYPE_OBJECT, $parameter->allowsNull(), $parameterTypeName)];
                     }
                 }
             }
