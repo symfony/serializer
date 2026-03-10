@@ -967,6 +967,18 @@ class AbstractObjectNormalizerTest extends TestCase
         $this->assertEquals(new DummyWithEnumUnion(EnumB::B), $serializer->denormalize($normalized, DummyWithEnumUnion::class));
     }
 
+    public function testDenormalizeSelfConstructorPromotedParameter()
+    {
+        $serializer = new Serializer([
+            new ObjectNormalizer(
+                propertyTypeExtractor: new PropertyInfoExtractor([], [new ReflectionExtractor()]),
+            ),
+        ]);
+
+        $normalized = $serializer->normalize(new DummyWithSelfConstructorPromotedParameter('A', new DummyWithSelfConstructorPromotedParameter('B')));
+        $this->assertEquals(new DummyWithSelfConstructorPromotedParameter('A', new DummyWithSelfConstructorPromotedParameter('B')), $serializer->denormalize($normalized, DummyWithSelfConstructorPromotedParameter::class));
+    }
+
     #[RequiresMethod(ReflectionTypeResolver::class, 'resolve')]
     public function testDenormalizeUsesConstructorUnionTypeWhenExtractorIsLessPrecise()
     {
@@ -1950,6 +1962,15 @@ class DummyWithEnumUnion
 {
     public function __construct(
         public readonly EnumA|EnumB $enum,
+    ) {
+    }
+}
+
+class DummyWithSelfConstructorPromotedParameter
+{
+    public function __construct(
+        public readonly string $name,
+        public readonly ?self $partner = null,
     ) {
     }
 }
