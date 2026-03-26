@@ -975,7 +975,7 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
         // BC layer for PropertyTypeExtractorInterface::getTypes().
         // Can be removed as soon as PropertyTypeExtractorInterface::getTypes() is removed (8.0).
         if (\is_array($type)) {
-            if (($parameterType = $parameter->getType()) instanceof \ReflectionNamedType) {
+            if (($parameterType = $parameter->getType()) instanceof \ReflectionNamedType && 'mixed' !== $parameterType->getName()) {
                 $matches = false;
 
                 if ($parameterType->isBuiltin()) {
@@ -1023,7 +1023,7 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
         if (null !== $parameterType && $parameterTypeResolver ??= class_exists(ReflectionTypeResolver::class) ? new ReflectionTypeResolver() : false) {
             $resolvedParameterType = $parameterTypeResolver->resolve($parameterType, ($parameterTypeContextFactory ??= new TypeContextFactory())->createFromClassName($class->name, $parameter->getDeclaringClass()?->name));
             if ($resolvedParameterType->isSatisfiedBy(static fn (Type $t) => match (true) {
-                $t instanceof BuiltinType && TypeIdentifier::NULL !== $t->getTypeIdentifier() => !$type->isIdentifiedBy($t->getTypeIdentifier()),
+                $t instanceof BuiltinType && !\in_array($t->getTypeIdentifier(), [TypeIdentifier::NULL, TypeIdentifier::MIXED], true) => !$type->isIdentifiedBy($t->getTypeIdentifier()),
                 $t instanceof ObjectType => !$type->isIdentifiedBy($t->getClassName()),
                 default => false,
             })) {
@@ -1033,7 +1033,7 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
             if ($parameterType->isBuiltin()) {
                 $typeIdentifier = TypeIdentifier::tryFrom($parameterType->getName());
 
-                if (null !== $typeIdentifier && !$type->isIdentifiedBy($typeIdentifier)) {
+                if (null !== $typeIdentifier && TypeIdentifier::MIXED !== $typeIdentifier && !$type->isIdentifiedBy($typeIdentifier)) {
                     $type = Type::builtin($typeIdentifier);
                 }
             } elseif (!$type->isIdentifiedBy($parameterType->getName())) {
