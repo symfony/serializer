@@ -631,6 +631,28 @@ class GetSetMethodNormalizerTest extends TestCase
         $this->assertArrayNotHasKey('neverProperty', $normalized);
         $this->assertEquals('value', $normalized['normalProperty']);
     }
+
+    public function testNormalizeWithCanPrefixMethods()
+    {
+        $obj = new GetSetDummyWithCanMethods();
+        $obj->setName('Alice');
+
+        $this->assertEquals(
+            ['name' => 'Alice', 'edit' => true, 'delete' => false],
+            $this->normalizer->normalize($obj, 'any')
+        );
+    }
+
+    public function testNormalizeWithCanPrefixOnly()
+    {
+        $obj = new GetSetDummyWithCanOnly();
+
+        $this->assertTrue($this->normalizer->supportsNormalization($obj));
+        $this->assertEquals(
+            ['read' => true, 'write' => false],
+            $this->normalizer->normalize($obj, 'any')
+        );
+    }
 }
 
 class GetSetDummy
@@ -1015,5 +1037,43 @@ class GetSetWithAccessorishMethod
 
     public function isolate()
     {
+    }
+}
+
+class GetSetDummyWithCanMethods
+{
+    private $name;
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    public function setName($name)
+    {
+        $this->name = $name;
+    }
+
+    public function canEdit(): bool
+    {
+        return true;
+    }
+
+    public function canDelete(): bool
+    {
+        return false;
+    }
+}
+
+class GetSetDummyWithCanOnly
+{
+    public function canRead(): bool
+    {
+        return true;
+    }
+
+    public function canWrite(): bool
+    {
+        return false;
     }
 }
