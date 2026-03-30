@@ -534,18 +534,18 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
                     $builtinType = Type::BUILTIN_TYPE_OBJECT;
                     $class = $collectionValueType->getClassName().'[]';
 
-                    if (\count($collectionKeyType = $type->getCollectionKeyTypes()) > 0) {
+                    if ($collectionKeyType = $type->getCollectionKeyTypes()) {
                         $context['key_type'] = \count($collectionKeyType) > 1 ? $collectionKeyType : $collectionKeyType[0];
                     }
 
                     $context['value_type'] = $collectionValueType;
-                } elseif ($type->isCollection() && \count($collectionValueType = $type->getCollectionValueTypes()) > 0 && Type::BUILTIN_TYPE_ARRAY === $collectionValueType[0]->getBuiltinType()) {
+                } elseif ($type->isCollection() && ($collectionValueType = $type->getCollectionValueTypes()) && Type::BUILTIN_TYPE_ARRAY === $collectionValueType[0]->getBuiltinType()) {
                     // get inner type for any nested array
                     [$innerType] = $collectionValueType;
 
                     // note that it will break for any other builtinType
                     $dimensions = '[]';
-                    while (\count($innerType->getCollectionValueTypes()) > 0 && Type::BUILTIN_TYPE_ARRAY === $innerType->getBuiltinType()) {
+                    while ($innerType->getCollectionValueTypes() && Type::BUILTIN_TYPE_ARRAY === $innerType->getBuiltinType()) {
                         $dimensions .= '[]';
                         [$innerType] = $innerType->getCollectionValueTypes();
                     }
@@ -554,6 +554,12 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
                         // the builtinType is the inner one and the class is the class followed by []...[]
                         $builtinType = $innerType->getBuiltinType();
                         $class = $innerType->getClassName().$dimensions;
+
+                        if ($collectionKeyType = $type->getCollectionKeyTypes()) {
+                            $context['key_type'] = \count($collectionKeyType) > 1 ? $collectionKeyType : $collectionKeyType[0];
+                        }
+
+                        $context['value_type'] = $collectionValueType[0];
                     } else {
                         // default fallback (keep it as array)
                         $builtinType = $type->getBuiltinType();

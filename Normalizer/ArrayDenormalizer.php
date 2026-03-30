@@ -62,6 +62,17 @@ class ArrayDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
             return $keyType->getBuiltinType();
         }, \is_array($keyType = $context['key_type'] ?? []) ? $keyType : [$keyType]);
 
+        $valueType = $context['value_type'] ?? null;
+        if ($valueType instanceof Type && $valueType->isCollection()) {
+            if ($collectionKeyTypes = $valueType->getCollectionKeyTypes()) {
+                $context['key_type'] = \count($collectionKeyTypes) > 1 ? $collectionKeyTypes : $collectionKeyTypes[0];
+            }
+
+            if ($collectionValueTypes = $valueType->getCollectionValueTypes()) {
+                $context['value_type'] = $collectionValueTypes[0];
+            }
+        }
+
         foreach ($data as $key => $value) {
             $subContext = $context;
             $subContext['deserialization_path'] = ($context['deserialization_path'] ?? false) ? \sprintf('%s[%s]', $context['deserialization_path'], $key) : "[$key]";
