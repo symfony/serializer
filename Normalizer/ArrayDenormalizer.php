@@ -17,6 +17,7 @@ use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
 use Symfony\Component\TypeInfo\Type;
 use Symfony\Component\TypeInfo\Type\BuiltinType;
+use Symfony\Component\TypeInfo\Type\CollectionType;
 use Symfony\Component\TypeInfo\Type\UnionType;
 use Symfony\Component\TypeInfo\TypeIdentifier;
 
@@ -67,6 +68,20 @@ class ArrayDenormalizer implements DenormalizerInterface, DenormalizerAwareInter
                 }
             } else {
                 $typeIdentifiers = array_map(fn (LegacyType $t): string => $t->getBuiltinType(), \is_array($keyType) ? $keyType : [$keyType]);
+            }
+        }
+
+        $valueType = $context['value_type'] ?? null;
+        if ($valueType instanceof CollectionType) {
+            $context['key_type'] = $valueType->getCollectionKeyType();
+            $context['value_type'] = $valueType->getCollectionValueType();
+        } elseif ($valueType instanceof LegacyType && $valueType->isCollection()) {
+            if ($collectionKeyTypes = $valueType->getCollectionKeyTypes()) {
+                $context['key_type'] = \count($collectionKeyTypes) > 1 ? $collectionKeyTypes : $collectionKeyTypes[0];
+            }
+
+            if ($collectionValueTypes = $valueType->getCollectionValueTypes()) {
+                $context['value_type'] = $collectionValueTypes[0];
             }
         }
 
