@@ -4,7 +4,6 @@ CHANGELOG
 6.4
 ---
 
- * Fix `GetSetMethodNormalizer` not extracting `can*()` prefixed methods in `isAllowedAttribute()` and `getAttributeValue()`
  * Add `TranslatableNormalizer`
  * Allow `Context` attribute to target classes
  * Deprecate Doctrine annotations support in favor of native attributes
