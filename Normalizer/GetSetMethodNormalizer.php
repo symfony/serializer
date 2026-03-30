@@ -80,7 +80,7 @@ final class GetSetMethodNormalizer extends AbstractObjectNormalizer
     }
 
     /**
-     * Checks if a method's name matches /^(get|is|has).+$/ and can be called non-statically without parameters.
+     * Checks if a method's name matches /^(get|is|has|can).+$/ and can be called non-statically without parameters.
      */
     private function isGetMethod(\ReflectionMethod $method): bool
     {
@@ -145,6 +145,11 @@ final class GetSetMethodNormalizer extends AbstractObjectNormalizer
             return $object->$haser();
         }
 
+        $caner = 'can'.$attribute;
+        if (method_exists($object, $caner) && \is_callable([$object, $caner])) {
+            return $object->$caner();
+        }
+
         return null;
     }
 
@@ -181,7 +186,7 @@ final class GetSetMethodNormalizer extends AbstractObjectNormalizer
         $reflection = self::$reflectionCache[$class];
 
         if ($context['_read_attributes'] ?? true) {
-            foreach (['get', 'is', 'has'] as $getterPrefix) {
+            foreach (['get', 'is', 'has', 'can'] as $getterPrefix) {
                 $getter = $getterPrefix.$attribute;
                 $reflectionMethod = $reflection->hasMethod($getter) ? $reflection->getMethod($getter) : null;
                 if ($reflectionMethod && $this->isGetMethod($reflectionMethod)) {

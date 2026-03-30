@@ -12,7 +12,6 @@
 namespace Symfony\Component\Serializer\Tests\Normalizer;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\RequiresMethod;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyPath;
 use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
@@ -65,7 +64,6 @@ use Symfony\Component\Serializer\Tests\Fixtures\DummyWithObjectOrNull;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyWithStringObject;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\ObjectDummyWithContextAttribute;
 use Symfony\Component\TypeInfo\Type;
-use Symfony\Component\TypeInfo\TypeResolver\ReflectionTypeResolver;
 
 class AbstractObjectNormalizerTest extends TestCase
 {
@@ -932,7 +930,6 @@ class AbstractObjectNormalizerTest extends TestCase
         $this->assertEquals(new DummyWithSelfConstructorPromotedParameter('A', new DummyWithSelfConstructorPromotedParameter('B')), $serializer->denormalize($normalized, DummyWithSelfConstructorPromotedParameter::class));
     }
 
-    #[RequiresMethod(ReflectionTypeResolver::class, 'resolve')]
     public function testDenormalizeUsesConstructorUnionTypeWhenExtractorIsLessPrecise()
     {
         $extractor = new class implements PropertyTypeExtractorInterface {
@@ -950,6 +947,39 @@ class AbstractObjectNormalizerTest extends TestCase
         $serializer = new Serializer([new ObjectNormalizer(propertyTypeExtractor: $extractor)]);
 
         $this->assertEquals(new DummyWithIntOrString(1), $serializer->denormalize(['value' => 1], DummyWithIntOrString::class));
+    }
+
+    public function testDenormalizeMixedConstructorParameterUsesExtractorType()
+    {
+        $extractor = new PropertyInfoExtractor([], [new ReflectionExtractor()]);
+
+        $entityDenormalizer = new class implements DenormalizerInterface {
+            public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): mixed
+            {
+                return new DummyEntity((int) $data);
+            }
+
+            public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
+            {
+                return DummyEntity::class === $type;
+            }
+
+            public function getSupportedTypes(?string $format): array
+            {
+                return [DummyEntity::class => true];
+            }
+        };
+
+        $serializer = new Serializer([
+            $entityDenormalizer,
+            new ObjectNormalizer(propertyTypeExtractor: $extractor),
+        ]);
+
+        $result = $serializer->denormalize(['entity' => 42], DummyWithMixedConstructorParamAndEntityGetter::class);
+
+        $this->assertInstanceOf(DummyWithMixedConstructorParamAndEntityGetter::class, $result);
+        $this->assertInstanceOf(DummyEntity::class, $result->getEntity());
+        $this->assertSame(42, $result->getEntity()->id);
     }
 
     public function testDenormalizeWithNumberAsSerializedNameAndNoArrayReindex()
@@ -2024,4 +2054,25 @@ class DummyGenericsValueWrapper
     public mixed $value;
     /** @var T[] */
     public array $values;
+}
+
+class DummyEntity
+{
+    public function __construct(
+        public int $id,
+    ) {
+    }
+}
+
+class DummyWithMixedConstructorParamAndEntityGetter
+{
+    public function __construct(
+        private mixed $entity = null,
+    ) {
+    }
+
+    public function getEntity(): ?DummyEntity
+    {
+        return $this->entity;
+    }
 }
