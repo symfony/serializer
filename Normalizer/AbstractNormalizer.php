@@ -242,9 +242,14 @@ abstract class AbstractNormalizer implements NormalizerInterface, DenormalizerIn
             }
         }
 
-        if (!$ignoreUsed && [] === $groups && $allowExtraAttributes) {
-            // Backward Compatibility with the code using this method written before the introduction of @Ignore
-            return false;
+        if (!$ignoreUsed && $allowExtraAttributes) {
+            if ([] === $groups) {
+                return false;
+            }
+
+            if ([] === $allowedAttributes && \in_array('*', $groups, true)) {
+                return false;
+            }
         }
 
         return $allowedAttributes;
