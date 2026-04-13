@@ -66,7 +66,7 @@ class JsonSerializableNormalizerTest extends TestCase
         $serializer
             ->expects($this->once())
             ->method('normalize')
-            ->willReturnCallback(function ($data, $format, $context) use ($normalizer) {
+            ->willReturnCallback(static function ($data, $format, $context) use ($normalizer) {
                 $normalizer->normalize($data['qux'], $format, $context);
 
                 return 'string_object';

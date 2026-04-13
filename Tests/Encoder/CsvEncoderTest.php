@@ -800,6 +800,6 @@ class CsvEncoderTest extends TestCase
         yield 'array' => [$data];
         yield 'array iterator' => [new \ArrayIterator($data)];
         yield 'iterator aggregate' => [new \IteratorIterator(new \ArrayIterator($data))];
-        yield 'generator' => [(fn (): \Generator => yield from $data)()];
+        yield 'generator' => [(static fn (): \Generator => yield from $data)()];
     }
 }
