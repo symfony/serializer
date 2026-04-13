@@ -76,7 +76,7 @@ class ContextTest extends TestCase
     public static function provideValidInputs(): iterable
     {
         yield 'named arguments: with context option' => [
-            fn () => new Context(context: ['foo' => 'bar']),
+            static fn () => new Context(context: ['foo' => 'bar']),
             <<<DUMP
                 Symfony\Component\Serializer\Attribute\Context {
                   -groups: []
@@ -90,7 +90,7 @@ class ContextTest extends TestCase
         ];
 
         yield 'named arguments: with normalization context option' => [
-            fn () => new Context(normalizationContext: ['foo' => 'bar']),
+            static fn () => new Context(normalizationContext: ['foo' => 'bar']),
             <<<DUMP
                 Symfony\Component\Serializer\Attribute\Context {
                   -groups: []
@@ -104,7 +104,7 @@ class ContextTest extends TestCase
         ];
 
         yield 'named arguments: with denormalization context option' => [
-            fn () => new Context(denormalizationContext: ['foo' => 'bar']),
+            static fn () => new Context(denormalizationContext: ['foo' => 'bar']),
             <<<DUMP
                 Symfony\Component\Serializer\Attribute\Context {
                   -groups: []
@@ -118,7 +118,7 @@ class ContextTest extends TestCase
         ];
 
         yield 'named arguments: with groups option as string' => [
-            fn () => new Context(context: ['foo' => 'bar'], groups: 'a'),
+            static fn () => new Context(context: ['foo' => 'bar'], groups: 'a'),
             <<<DUMP
                 Symfony\Component\Serializer\Attribute\Context {
                   -groups: [
@@ -134,7 +134,7 @@ class ContextTest extends TestCase
         ];
 
         yield 'named arguments: with groups option as array' => [
-            fn () => new Context(context: ['foo' => 'bar'], groups: ['a', 'b']),
+            static fn () => new Context(context: ['foo' => 'bar'], groups: ['a', 'b']),
             <<<DUMP
                 Symfony\Component\Serializer\Attribute\Context {
                   -groups: [

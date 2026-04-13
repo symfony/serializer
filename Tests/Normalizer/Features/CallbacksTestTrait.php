@@ -131,7 +131,7 @@ trait CallbacksTestTrait
         return [
             'Change a string' => [
                 [
-                    'bar' => function ($bar) {
+                    'bar' => static function ($bar) {
                         static::assertEquals('baz', $bar);
 
                         return 'baz';
@@ -142,7 +142,7 @@ trait CallbacksTestTrait
             ],
             'Null an item' => [
                 [
-                    'bar' => function ($value, $object, $attributeName, $format, $context) {
+                    'bar' => static function ($value, $object, $attributeName, $format, $context) {
                         static::assertSame('baz', $value);
                         static::assertInstanceOf(CallbacksObject::class, $object);
                         static::assertSame('bar', $attributeName);
@@ -155,7 +155,7 @@ trait CallbacksTestTrait
             ],
             'Format a date' => [
                 [
-                    'bar' => function ($bar) {
+                    'bar' => static function ($bar) {
                         static::assertInstanceOf(\DateTimeImmutable::class, $bar);
 
                         return $bar->format('d-m-Y H:i:s');
@@ -166,7 +166,7 @@ trait CallbacksTestTrait
             ],
             'Collect a property' => [
                 [
-                    'bar' => function (array $bars) {
+                    'bar' => static function (array $bars) {
                         $result = '';
                         foreach ($bars as $bar) {
                             $result .= $bar->bar;
@@ -180,7 +180,7 @@ trait CallbacksTestTrait
             ],
             'Count a property' => [
                 [
-                    'bar' => fn (array $bars) => \count($bars),
+                    'bar' => static fn (array $bars) => \count($bars),
                 ],
                 [new CallbacksObject(), new CallbacksObject()],
                 ['bar' => 2, 'foo' => null],
@@ -193,7 +193,7 @@ trait CallbacksTestTrait
         return [
             'Change a string' => [
                 [
-                    'bar' => function ($bar) {
+                    'bar' => static function ($bar) {
                         static::assertEquals('bar', $bar);
 
                         return $bar;
@@ -204,7 +204,7 @@ trait CallbacksTestTrait
             ],
             'Null an item' => [
                 [
-                    'bar' => function ($value, $object, $attributeName, $format, $context) {
+                    'bar' => static function ($value, $object, $attributeName, $format, $context) {
                         static::assertSame('baz', $value);
                         static::assertTrue(is_a($object, CallbacksObject::class, true));
                         static::assertSame('bar', $attributeName);
@@ -217,7 +217,7 @@ trait CallbacksTestTrait
             ],
             'Format a date' => [
                 [
-                    'bar' => function ($bar) {
+                    'bar' => static function ($bar) {
                         static::assertIsString($bar);
 
                         return \DateTimeImmutable::createFromFormat('d-m-Y H:i:s', $bar);
@@ -228,7 +228,7 @@ trait CallbacksTestTrait
             ],
             'Collect a property' => [
                 [
-                    'bar' => function (array $bars) {
+                    'bar' => static function (array $bars) {
                         $result = '';
                         foreach ($bars as $bar) {
                             $result .= $bar->bar;
@@ -242,7 +242,7 @@ trait CallbacksTestTrait
             ],
             'Count a property' => [
                 [
-                    'bar' => fn (array $bars) => \count($bars),
+                    'bar' => static fn (array $bars) => \count($bars),
                 ],
                 [new CallbacksObject(), new CallbacksObject()],
                 new CallbacksObject(2),
@@ -255,7 +255,7 @@ trait CallbacksTestTrait
         return [
             'Change a typed string' => [
                 [
-                    'foo' => function ($foo) {
+                    'foo' => static function ($foo) {
                         static::assertEquals('foo', $foo);
 
                         return $foo;
@@ -266,7 +266,7 @@ trait CallbacksTestTrait
             ],
             'Null an typed item' => [
                 [
-                    'foo' => function ($value, $object, $attributeName, $format, $context) {
+                    'foo' => static function ($value, $object, $attributeName, $format, $context) {
                         static::assertSame('fool', $value);
                         static::assertTrue(is_a($object, CallbacksObject::class, true));
                         static::assertSame('foo', $attributeName);
