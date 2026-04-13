@@ -57,7 +57,7 @@ class ArrayDenormalizer implements DenormalizerInterface, DenormalizerAwareInter
             /** @var list<BuiltinType<TypeIdentifier::INT>|BuiltinType<TypeIdentifier::STRING>> */
             $keyTypes = $keyType instanceof UnionType ? $keyType->getTypes() : [$keyType];
 
-            $typeIdentifiers = array_map(fn ($t) => $t->getTypeIdentifier()->value, $keyTypes);
+            $typeIdentifiers = array_map(static fn ($t) => $t->getTypeIdentifier()->value, $keyTypes);
         }
 
         $valueType = $context['value_type'] ?? null;
