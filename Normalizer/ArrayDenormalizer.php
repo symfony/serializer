@@ -59,15 +59,15 @@ class ArrayDenormalizer implements DenormalizerInterface, DenormalizerAwareInter
             if ($keyType instanceof Type) {
                 // BC layer for type-info < 7.2
                 if (method_exists(Type::class, 'getBaseType')) {
-                    $typeIdentifiers = array_map(fn (Type $t): string => $t->getBaseType()->getTypeIdentifier()->value, $keyType instanceof UnionType ? $keyType->getTypes() : [$keyType]);
+                    $typeIdentifiers = array_map(static fn (Type $t): string => $t->getBaseType()->getTypeIdentifier()->value, $keyType instanceof UnionType ? $keyType->getTypes() : [$keyType]);
                 } else {
                     /** @var list<BuiltinType<TypeIdentifier::INT>|BuiltinType<TypeIdentifier::STRING>> */
                     $keyTypes = $keyType instanceof UnionType ? $keyType->getTypes() : [$keyType];
 
-                    $typeIdentifiers = array_map(fn (BuiltinType $t): string => $t->getTypeIdentifier()->value, $keyTypes);
+                    $typeIdentifiers = array_map(static fn (BuiltinType $t): string => $t->getTypeIdentifier()->value, $keyTypes);
                 }
             } else {
-                $typeIdentifiers = array_map(fn (LegacyType $t): string => $t->getBuiltinType(), \is_array($keyType) ? $keyType : [$keyType]);
+                $typeIdentifiers = array_map(static fn (LegacyType $t): string => $t->getBuiltinType(), \is_array($keyType) ? $keyType : [$keyType]);
             }
         }
 

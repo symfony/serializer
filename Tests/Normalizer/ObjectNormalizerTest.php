@@ -958,7 +958,7 @@ class ObjectNormalizerTest extends TestCase
             'go' => null,
         ];
 
-        $this->assertEquals($expected, $this->normalizer->normalize($objectDummy, null, ['not_serializable' => function () {
+        $this->assertEquals($expected, $this->normalizer->normalize($objectDummy, null, ['not_serializable' => static function () {
         }]));
     }
 
@@ -1088,7 +1088,7 @@ class ObjectNormalizerTest extends TestCase
 
     public function testObjectClassResolver()
     {
-        $classResolver = fn ($object) => ObjectDummy::class;
+        $classResolver = static fn ($object) => ObjectDummy::class;
 
         $normalizer = new ObjectNormalizer(null, null, null, null, null, $classResolver);
 
