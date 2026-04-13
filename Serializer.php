@@ -237,7 +237,7 @@ class Serializer implements SerializerInterface, ContextAwareNormalizerInterface
                         continue;
                     }
 
-                    $uniqueErrors[$error->getPath()] = $uniqueErrors[$error->getPath()] ?? $error;
+                    $uniqueErrors[$error->getPath()] ??= $error;
                 }
 
                 throw new PartialDenormalizationException($denormalized, array_values($uniqueErrors));

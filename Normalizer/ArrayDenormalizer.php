@@ -58,9 +58,7 @@ class ArrayDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
 
         $type = substr($type, 0, -2);
 
-        $builtinTypes = array_map(static function (Type $keyType) {
-            return $keyType->getBuiltinType();
-        }, \is_array($keyType = $context['key_type'] ?? []) ? $keyType : [$keyType]);
+        $builtinTypes = array_map(static fn (Type $keyType) => $keyType->getBuiltinType(), \is_array($keyType = $context['key_type'] ?? []) ? $keyType : [$keyType]);
 
         $valueType = $context['value_type'] ?? null;
         if ($valueType instanceof Type && $valueType->isCollection()) {

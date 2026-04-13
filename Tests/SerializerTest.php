@@ -1360,15 +1360,13 @@ class SerializerTest extends TestCase
         $this->assertTrue($object->bool);
         $this->assertSame(1, $object->int);
 
-        $exceptionsAsArray = array_map(static function (NotNormalizableValueException $e): array {
-            return [
-                'currentType' => $e->getCurrentType(),
-                'expectedTypes' => $e->getExpectedTypes(),
-                'path' => $e->getPath(),
-                'useMessageForUser' => $e->canUseMessageForUser(),
-                'message' => $e->getMessage(),
-            ];
-        }, $th->getErrors());
+        $exceptionsAsArray = array_map(static fn (NotNormalizableValueException $e): array => [
+            'currentType' => $e->getCurrentType(),
+            'expectedTypes' => $e->getExpectedTypes(),
+            'path' => $e->getPath(),
+            'useMessageForUser' => $e->canUseMessageForUser(),
+            'message' => $e->getMessage(),
+        ], $th->getErrors());
 
         $expected = [
             [
@@ -1505,13 +1503,11 @@ class SerializerTest extends TestCase
             $this->assertInstanceOf(PartialDenormalizationException::class, $e);
         }
 
-        $exceptionsAsArray = array_map(static function (NotNormalizableValueException $e): array {
-            return [
-                'currentType' => $e->getCurrentType(),
-                'useMessageForUser' => $e->canUseMessageForUser(),
-                'message' => $e->getMessage(),
-            ];
-        }, $e->getErrors());
+        $exceptionsAsArray = array_map(static fn (NotNormalizableValueException $e): array => [
+            'currentType' => $e->getCurrentType(),
+            'useMessageForUser' => $e->canUseMessageForUser(),
+            'message' => $e->getMessage(),
+        ], $e->getErrors());
 
         $expected = [
             [
@@ -1685,15 +1681,13 @@ class SerializerTest extends TestCase
         $this->assertFalse(isset($object->two));
         $this->assertSame('three string', $object->three);
 
-        $exceptionsAsArray = array_map(static function (NotNormalizableValueException $e): array {
-            return [
-                'currentType' => $e->getCurrentType(),
-                'expectedTypes' => $e->getExpectedTypes(),
-                'path' => $e->getPath(),
-                'useMessageForUser' => $e->canUseMessageForUser(),
-                'message' => $e->getMessage(),
-            ];
-        }, $th->getErrors());
+        $exceptionsAsArray = array_map(static fn (NotNormalizableValueException $e): array => [
+            'currentType' => $e->getCurrentType(),
+            'expectedTypes' => $e->getExpectedTypes(),
+            'path' => $e->getPath(),
+            'useMessageForUser' => $e->canUseMessageForUser(),
+            'message' => $e->getMessage(),
+        ], $th->getErrors());
 
         $expected = [
             [
@@ -1766,15 +1760,13 @@ class SerializerTest extends TestCase
             $this->assertIsArray($e->getErrors());
             $this->assertCount(2, $e->getErrors(), 'Expected two denormalization errors');
 
-            $exceptionsAsArray = array_map(static function (NotNormalizableValueException $ex): array {
-                return [
-                    'currentType' => $ex->getCurrentType(),
-                    'expectedTypes' => $ex->getExpectedTypes(),
-                    'path' => $ex->getPath(),
-                    'useMessageForUser' => $ex->canUseMessageForUser(),
-                    'message' => $ex->getMessage(),
-                ];
-            }, $e->getErrors());
+            $exceptionsAsArray = array_map(static fn (NotNormalizableValueException $ex): array => [
+                'currentType' => $ex->getCurrentType(),
+                'expectedTypes' => $ex->getExpectedTypes(),
+                'path' => $ex->getPath(),
+                'useMessageForUser' => $ex->canUseMessageForUser(),
+                'message' => $ex->getMessage(),
+            ], $e->getErrors());
 
             $expected = [
                 [
