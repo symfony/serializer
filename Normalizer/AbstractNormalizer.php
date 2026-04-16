@@ -346,6 +346,7 @@ abstract class AbstractNormalizer implements NormalizerInterface, DenormalizerIn
             $missingConstructorArguments = [];
             $params = [];
             $unsetKeys = [];
+            $collectedErrorCountBeforeConstructor = \count($context['not_normalizable_value_exceptions'] ?? []);
 
             foreach ($constructorParameters as $constructorParameter) {
                 $paramName = $constructorParameter->name;
@@ -462,6 +463,22 @@ abstract class AbstractNormalizer implements NormalizerInterface, DenormalizerIn
             } catch (\TypeError $e) {
                 if (!isset($context['not_normalizable_value_exceptions'])) {
                     throw $e;
+                }
+
+                // Only report the TypeError when no constructor-argument error was collected for
+                // this instantiation. When the loop above already recorded missing or invalid
+                // arguments, the TypeError is a downstream consequence of those errors and would
+                // just duplicate the report.
+                if (\count($context['not_normalizable_value_exceptions']) === $collectedErrorCountBeforeConstructor) {
+                    $context['not_normalizable_value_exceptions'][] = NotNormalizableValueException::createForUnexpectedDataType(
+                        \sprintf('Failed to create an instance of "%s" from constructor: %s', $class, $e->getMessage()),
+                        null,
+                        ['unknown'],
+                        $context['deserialization_path'] ?? null,
+                        false,
+                        0,
+                        $e,
+                    );
                 }
 
                 return $reflectionClass->newInstanceWithoutConstructor();
