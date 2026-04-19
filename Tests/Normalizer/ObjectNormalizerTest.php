@@ -1040,7 +1040,8 @@ class ObjectNormalizerTest extends TestCase
 
         return new ObjectNormalizer(
             $classMetadataFactory,
-            propertyAccessor: $propertyAccessorBuilder->getPropertyAccessor(),
+            null,
+            $propertyAccessorBuilder->getPropertyAccessor(),
         );
     }
 
