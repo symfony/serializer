@@ -1544,9 +1544,9 @@ class SerializerTest extends TestCase
 
         $expected = [
             [
-                'currentType' => 'string',
+                'currentType' => StringBackedEnumDummy::class,
                 'useMessageForUser' => true,
-                'message' => 'The data must belong to a backed enumeration of type '.StringBackedEnumDummy::class,
+                'message' => 'The data must be one of the following values: "GET", "OPTIONS"',
             ],
         ];
 
@@ -1578,10 +1578,10 @@ class SerializerTest extends TestCase
 
             $this->assertSame([
                 [
-                    'currentType' => 'string',
+                    'currentType' => StringBackedEnumDummy::class,
                     'path' => 'get',
                     'useMessageForUser' => true,
-                    'message' => 'The data must belong to a backed enumeration of type Symfony\Component\Serializer\Tests\Fixtures\StringBackedEnumDummy',
+                    'message' => 'The data must be one of the following values: "GET", "OPTIONS"',
                 ],
             ], $exceptionsAsArray);
         }
