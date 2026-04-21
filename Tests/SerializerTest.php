@@ -1553,6 +1553,48 @@ class SerializerTest extends TestCase
         }
     }
 
+    public function testCollectDenormalizationErrorsCapturesConstructorTypeError()
+    {
+        $classStringDenormalizer = new class implements DenormalizerInterface {
+            public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): object
+            {
+                return new $data();
+            }
+
+            public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
+            {
+                return \is_string($data) && class_exists($data);
+            }
+
+            public function getSupportedTypes(?string $format): array
+            {
+                return ['*' => false];
+            }
+        };
+
+        $serializer = new Serializer([$classStringDenormalizer, new ObjectNormalizer()]);
+
+        $target = Fixtures\DummyWithObjectConstructor::class;
+        $otherClass = Php74Full::class;
+
+        try {
+            $serializer->denormalize(
+                ['nested' => $otherClass],
+                $target,
+                context: [DenormalizerInterface::COLLECT_DENORMALIZATION_ERRORS => true],
+            );
+            self::fail(\sprintf('Failed asserting that exception of type "%s" is thrown.', PartialDenormalizationException::class));
+        } catch (PartialDenormalizationException $e) {
+            $capturedFromTypeError = array_values(array_filter(
+                $e->getErrors(),
+                static fn (NotNormalizableValueException $error): bool => $error->getPrevious() instanceof \TypeError,
+            ));
+            self::assertCount(1, $capturedFromTypeError, 'Constructor TypeError must be captured exactly once as a NotNormalizableValueException.');
+            self::assertFalse($capturedFromTypeError[0]->canUseMessageForUser());
+            self::assertSame(['unknown'], $capturedFromTypeError[0]->getExpectedTypes());
+        }
+    }
+
     public function testGroupsOnClassSerialization()
     {
         $obj = new Fixtures\Attributes\GroupClassDummy();
