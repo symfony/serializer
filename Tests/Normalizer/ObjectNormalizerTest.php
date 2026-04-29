@@ -610,7 +610,7 @@ class ObjectNormalizerTest extends TestCase
             $this->assertInstanceOf(NotNormalizableValueException::class, $error);
             $this->assertSame('name', $error->getPath());
             $this->assertSame('array', $error->getCurrentType());
-            $this->assertSame(['string'], $error->getExpectedTypes());
+            $this->assertSame([class_exists(InvalidTypeException::class) ? 'string' : 'unknown'], $error->getExpectedTypes());
         }
     }
 
