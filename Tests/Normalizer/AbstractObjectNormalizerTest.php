@@ -993,7 +993,7 @@ class AbstractObjectNormalizerTest extends TestCase
             }
         };
 
-        $serializer = new Serializer([new ObjectNormalizer(propertyTypeExtractor: $extractor)]);
+        $serializer = new Serializer([new ObjectNormalizer(null, null, null, $extractor)]);
 
         $this->assertEquals(new DummyWithIntOrString(1), $serializer->denormalize(['value' => 1], DummyWithIntOrString::class));
     }
@@ -1021,7 +1021,7 @@ class AbstractObjectNormalizerTest extends TestCase
 
         $serializer = new Serializer([
             $entityDenormalizer,
-            new ObjectNormalizer(propertyTypeExtractor: $extractor),
+            new ObjectNormalizer(null, null, null, $extractor),
         ]);
 
         $result = $serializer->denormalize(['entity' => 42], DummyWithMixedConstructorParamAndEntityGetter::class);
@@ -1056,7 +1056,7 @@ class AbstractObjectNormalizerTest extends TestCase
 
         $serializer = new Serializer([
             $entityDenormalizer,
-            new ObjectNormalizer(propertyTypeExtractor: $extractor),
+            new ObjectNormalizer(null, null, null, $extractor),
         ]);
 
         $result = $serializer->denormalize(['entity' => 42], DummyWithMixedConstructorParamAndEntityGetter::class);
@@ -1100,7 +1100,7 @@ class AbstractObjectNormalizerTest extends TestCase
 
         $serializer = new Serializer([
             $entityDenormalizer,
-            new ObjectNormalizer(propertyTypeExtractor: $extractor),
+            new ObjectNormalizer(null, null, null, $extractor),
         ]);
 
         $result = $serializer->denormalize(['entity' => 42], DummyWithMixedConstructorParamAndEntityGetter::class);
@@ -1435,7 +1435,7 @@ class AbstractObjectNormalizerTest extends TestCase
 
         $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
         $normalizer = new ObjectNormalizer($classMetadataFactory);
-        $normalized = $normalizer->normalize($object, context: [
+        $normalized = $normalizer->normalize($object, null, [
             AbstractObjectNormalizer::ENABLE_MAX_DEPTH => true,
         ]);
 
@@ -1595,7 +1595,7 @@ class AbstractObjectNormalizerTest extends TestCase
 
     public function testTemplateTypeWhenAnObjectIsPassedToDenormalize()
     {
-        $normalizer = new class(classMetadataFactory: new ClassMetadataFactory(new AttributeLoader()), propertyTypeExtractor: new PropertyInfoExtractor(typeExtractors: [new PhpStanExtractor(), new ReflectionExtractor()])) extends AbstractObjectNormalizerDummy {
+        $normalizer = new class(new ClassMetadataFactory(new AttributeLoader()), null, new PropertyInfoExtractor([], [new PhpStanExtractor(), new ReflectionExtractor()])) extends AbstractObjectNormalizerDummy {
             protected function isAllowedAttribute($classOrObject, string $attribute, ?string $format = null, array $context = []): bool
             {
                 return true;
@@ -1618,7 +1618,7 @@ class AbstractObjectNormalizerTest extends TestCase
             $this->markTestSkipped('The PropertyInfo component before Symfony 7.1 does not support template types.');
         }
 
-        $normalizer = new class(classMetadataFactory: new ClassMetadataFactory(new AttributeLoader()), propertyTypeExtractor: new PropertyInfoExtractor(typeExtractors: [new PhpStanExtractor(), new ReflectionExtractor()])) extends AbstractObjectNormalizerDummy {
+        $normalizer = new class(new ClassMetadataFactory(new AttributeLoader()), null, new PropertyInfoExtractor([], [new PhpStanExtractor(), new ReflectionExtractor()])) extends AbstractObjectNormalizerDummy {
             protected function isAllowedAttribute($classOrObject, string $attribute, ?string $format = null, array $context = []): bool
             {
                 return true;
