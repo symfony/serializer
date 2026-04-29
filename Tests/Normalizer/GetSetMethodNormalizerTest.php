@@ -523,6 +523,18 @@ class GetSetMethodNormalizerTest extends TestCase
         return new GetSetMethodNormalizer(new ClassMetadataFactory(new AttributeLoader()));
     }
 
+    public function testUnrelatedErrorFromGetterIsNotSwallowed()
+    {
+        $normalizer = new GetSetMethodNormalizer();
+
+        $this->expectException(\TypeError::class);
+        $this->expectExceptionMessage('intentional getter failure');
+
+        $normalizer->normalize(new GetSetDummyWithThrowingGetter(), null, [
+            'skip_uninitialized_values' => true,
+        ]);
+    }
+
     public function testNormalizeWithDiscriminator()
     {
         $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
@@ -805,6 +817,14 @@ class GetConstructorOptionalArgsDummy
     public function otherMethod()
     {
         throw new \RuntimeException('Dummy::otherMethod() should not be called');
+    }
+}
+
+class GetSetDummyWithThrowingGetter
+{
+    public function getValue(): string
+    {
+        throw new \TypeError('intentional getter failure');
     }
 }
 
