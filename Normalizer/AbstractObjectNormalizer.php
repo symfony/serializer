@@ -11,8 +11,6 @@
 
 namespace Symfony\Component\Serializer\Normalizer;
 
-use Symfony\Component\PropertyAccess\Exception\InvalidArgumentException as PropertyAccessInvalidArgumentException;
-use Symfony\Component\PropertyAccess\Exception\InvalidTypeException;
 use Symfony\Component\PropertyAccess\Exception\NoSuchIndexException;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\Exception\UninitializedPropertyException;
@@ -198,8 +196,8 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
                 $attributeValue = $attribute === $this->classDiscriminatorResolver?->getMappingForMappedObject($data)?->getTypeProperty()
                     ? $this->classDiscriminatorResolver?->getTypeForMappedObject($data)
                     : $this->getAttributeValue($data, $attribute, $format, $attributeContext);
-            } catch (UninitializedPropertyException|\Error $e) {
-                if (($context[self::SKIP_UNINITIALIZED_VALUES] ?? $this->defaultContext[self::SKIP_UNINITIALIZED_VALUES] ?? true) && $this->isUninitializedValueError($e)) {
+            } catch (UninitializedPropertyException $e) {
+                if ($context[self::SKIP_UNINITIALIZED_VALUES] ?? $this->defaultContext[self::SKIP_UNINITIALIZED_VALUES] ?? true) {
                     continue;
                 }
                 throw $e;
@@ -291,6 +289,8 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
 
     /**
      * Gets the attribute value.
+     *
+     * @throws UninitializedPropertyException When the attribute exists but is not initialized on the object
      */
     abstract protected function getAttributeValue(object $object, string $attribute, ?string $format = null, array $context = []): mixed;
 
@@ -379,8 +379,8 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
                         ? $discriminatorMapping
                         : $this->getAttributeValue($object, $attribute, $format, $attributeContext);
                 } catch (NoSuchPropertyException) {
-                } catch (UninitializedPropertyException|\Error $e) {
-                    if (!(($context[self::SKIP_UNINITIALIZED_VALUES] ?? $this->defaultContext[self::SKIP_UNINITIALIZED_VALUES] ?? true) && $this->isUninitializedValueError($e))) {
+                } catch (UninitializedPropertyException $e) {
+                    if (!($context[self::SKIP_UNINITIALIZED_VALUES] ?? $this->defaultContext[self::SKIP_UNINITIALIZED_VALUES] ?? true)) {
                         throw $e;
                     }
                 }
@@ -402,16 +402,7 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
 
             try {
                 $this->setAttributeValue($object, $attribute, $value, $format, $attributeContext);
-            } catch (PropertyAccessInvalidArgumentException $e) {
-                $exception = NotNormalizableValueException::createForUnexpectedDataType(
-                    \sprintf('Failed to denormalize attribute "%s" value for class "%s": '.$e->getMessage(), $attribute, $resolvedClass),
-                    $value,
-                    $e instanceof InvalidTypeException ? [$e->expectedType] : ['unknown'],
-                    $attributeContext['deserialization_path'] ?? null,
-                    false,
-                    $e->getCode(),
-                    $e
-                );
+            } catch (NotNormalizableValueException $exception) {
                 if (isset($context['not_normalizable_value_exceptions'])) {
                     $context['not_normalizable_value_exceptions'][] = $exception;
                     continue;
@@ -427,6 +418,9 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
         return $object;
     }
 
+    /**
+     * @throws NotNormalizableValueException When the value cannot be assigned to the attribute (e.g. type mismatch)
+     */
     abstract protected function setAttributeValue(object $object, string $attribute, mixed $value, ?string $format = null, array $context = []): void;
 
     /**
@@ -894,17 +888,6 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
             // The context cannot be serialized, skip the cache
             return false;
         }
-    }
-
-    /**
-     * This error may occur when specific object normalizer implementation gets attribute value
-     * by accessing a public uninitialized property or by calling a method accessing such property.
-     */
-    private function isUninitializedValueError(\Error|UninitializedPropertyException $e): bool
-    {
-        return $e instanceof UninitializedPropertyException
-            || str_starts_with($e->getMessage(), 'Typed property')
-            && str_ends_with($e->getMessage(), 'must not be accessed before initialization');
     }
 
     /**

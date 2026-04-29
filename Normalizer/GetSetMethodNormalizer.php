@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Serializer\Normalizer;
 
+use Symfony\Component\PropertyAccess\Exception\UninitializedPropertyException;
 use Symfony\Component\Serializer\Annotation\Ignore as LegacyIgnore;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
@@ -130,24 +131,31 @@ final class GetSetMethodNormalizer extends AbstractObjectNormalizer
 
     protected function getAttributeValue(object $object, string $attribute, ?string $format = null, array $context = []): mixed
     {
-        $getter = 'get'.$attribute;
-        if (method_exists($object, $getter) && \is_callable([$object, $getter])) {
-            return $object->$getter();
-        }
+        try {
+            $getter = 'get'.$attribute;
+            if (method_exists($object, $getter) && \is_callable([$object, $getter])) {
+                return $object->$getter();
+            }
 
-        $isser = 'is'.$attribute;
-        if (method_exists($object, $isser) && \is_callable([$object, $isser])) {
-            return $object->$isser();
-        }
+            $isser = 'is'.$attribute;
+            if (method_exists($object, $isser) && \is_callable([$object, $isser])) {
+                return $object->$isser();
+            }
 
-        $haser = 'has'.$attribute;
-        if (method_exists($object, $haser) && \is_callable([$object, $haser])) {
-            return $object->$haser();
-        }
+            $haser = 'has'.$attribute;
+            if (method_exists($object, $haser) && \is_callable([$object, $haser])) {
+                return $object->$haser();
+            }
 
-        $caner = 'can'.$attribute;
-        if (method_exists($object, $caner) && \is_callable([$object, $caner])) {
-            return $object->$caner();
+            $caner = 'can'.$attribute;
+            if (method_exists($object, $caner) && \is_callable([$object, $caner])) {
+                return $object->$caner();
+            }
+        } catch (\Error $e) {
+            if (str_starts_with($e->getMessage(), 'Typed property') && str_ends_with($e->getMessage(), 'must not be accessed before initialization')) {
+                throw new UninitializedPropertyException(\sprintf('The property "%s::$%s" is not initialized.', $object::class, $attribute), 0, $e);
+            }
+            throw $e;
         }
 
         return null;
