@@ -80,11 +80,11 @@ final class BackedEnumNormalizer implements NormalizerInterface, DenormalizerInt
             }
 
             $expectedValues = array_map(
-                static fn ($type) => \sprintf('%s%s%1$s', \is_string($type->value) ? '"' : '', $type->value),
+                static fn ($case) => \sprintf('%s%s%1$s', \is_string($case->value) ? '"' : '', $case->value),
                 $type::cases(),
             );
 
-            throw new NotNormalizableValueException('The data must be one of the following values: '.implode(', ', $expectedValues), 0, $e, $type, null, $context['deserialization_path'] ?? null, true);
+            throw new NotNormalizableValueException('The data must be one of the following values: '.implode(', ', $expectedValues), 0, $e, get_debug_type($data), null, $context['deserialization_path'] ?? null, true);
         }
     }
 

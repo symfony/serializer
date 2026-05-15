@@ -79,7 +79,6 @@ use Symfony\Component\Serializer\Tests\Fixtures\ObjectCollectionPropertyDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Php74Full;
 use Symfony\Component\Serializer\Tests\Fixtures\Php80WithOptionalConstructorParameter;
 use Symfony\Component\Serializer\Tests\Fixtures\Php80WithPromotedTypedConstructor;
-use Symfony\Component\Serializer\Tests\Fixtures\StringBackedEnumDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\TraversableDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\TrueBuiltInDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\WithTypedConstructor;
@@ -1741,7 +1740,7 @@ class SerializerTest extends TestCase
 
         $expected = [
             [
-                'currentType' => StringBackedEnumDummy::class,
+                'currentType' => 'string',
                 'useMessageForUser' => true,
                 'message' => 'The data must be one of the following values: "GET", "OPTIONS"',
             ],
@@ -1775,7 +1774,7 @@ class SerializerTest extends TestCase
 
             $this->assertSame([
                 [
-                    'currentType' => StringBackedEnumDummy::class,
+                    'currentType' => 'string',
                     'path' => 'get',
                     'useMessageForUser' => true,
                     'message' => 'The data must be one of the following values: "GET", "OPTIONS"',

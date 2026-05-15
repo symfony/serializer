@@ -73,6 +73,8 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
      * While denormalizing, convert scalar types to the expected type.
      *
      * If not defined, it will be enabled for XML and CSV format, because all basic datatypes are represented as strings.
+     * The default is computed once from the outermost $format and then propagated to child contexts. Set the key
+     * explicitly to opt in or out independently of $format.
      */
     public const ENABLE_TYPE_CONVERSION = 'enable_type_conversion';
 

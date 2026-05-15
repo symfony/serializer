@@ -173,7 +173,7 @@ class BackedEnumNormalizerTest extends TestCase
             self::fail(\sprintf('Failed asserting that exception of type "%s" is thrown.', NotNormalizableValueException::class));
         } catch (NotNormalizableValueException $e) {
             $this->assertSame('get', $e->getPath());
-            $this->assertSame(StringBackedEnumDummy::class, $e->getCurrentType());
+            $this->assertSame('string', $e->getCurrentType());
             $this->assertNull($e->getExpectedTypes());
             $this->assertTrue($e->canUseMessageForUser());
             $this->assertSame('The data must be one of the following values: "GET", "OPTIONS"', $e->getMessage());
