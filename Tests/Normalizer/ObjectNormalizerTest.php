@@ -1226,6 +1226,15 @@ class ObjectNormalizerTest extends TestCase
         $this->assertSame(['visibleGroup' => 'visible_group'], $normalizer->normalize($object, null, ['groups' => ['group1']]));
     }
 
+    public function testIgnoreAttributeOnGetterWithSameNameAsProperty()
+    {
+        $normalizer = new ObjectNormalizer(new ClassMetadataFactory(new AttributeLoader()));
+
+        $object = new ObjectWithIgnoredGetterSameNameAsProperty();
+
+        $this->assertSame(['name' => 'foo'], $normalizer->normalize($object));
+    }
+
     /**
      * Priority of accessor methods is defined by the PropertyReadInfoExtractorInterface passed to the PropertyAccessor
      * component. By default ReflectionExtractor::$defaultAccessorPrefixes are used.
@@ -2070,6 +2079,17 @@ class ObjectWithIgnoredMethodSameNameAsPropertyWithGroups
     public function visibleGroup()
     {
         return $this->visibleGroup;
+    }
+}
+
+class ObjectWithIgnoredGetterSameNameAsProperty
+{
+    public string $name = 'foo';
+
+    #[Ignore]
+    public function getName(): string
+    {
+        return $this->name;
     }
 }
 
