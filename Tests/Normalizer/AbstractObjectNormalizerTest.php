@@ -1031,6 +1031,23 @@ class AbstractObjectNormalizerTest extends TestCase
         $this->assertSame(42, $result->getEntity()->id);
     }
 
+    public function testDenormalizeIterableConstructorParameterDenormalizesItems()
+    {
+        $serializer = new Serializer([
+            new ArrayDenormalizer(),
+            new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()])),
+        ]);
+
+        $result = $serializer->denormalize(
+            ['items' => [['value' => 'foo'], ['value' => 'bar']]],
+            DummyWithIterableOfDtos::class,
+        );
+
+        $this->assertInstanceOf(DummyWithIterableOfDtos::class, $result);
+        $this->assertContainsOnlyInstancesOf(DummyDtoItem::class, $result->items);
+        $this->assertSame(['foo', 'bar'], array_map(static fn (DummyDtoItem $i) => $i->value, $result->items));
+    }
+
     #[Group('legacy')]
     #[IgnoreDeprecations]
     public function testDenormalizeMixedConstructorParameterUsesExtractorTypeLegacy()
@@ -2206,5 +2223,26 @@ class DummyWithMixedConstructorParamAndEntityGetter
     public function getEntity(): ?DummyEntity
     {
         return $this->entity;
+    }
+}
+
+class DummyDtoItem
+{
+    public string $value;
+}
+
+class DummyWithIterableOfDtos
+{
+    /** @var array<DummyDtoItem> */
+    public array $items;
+
+    /**
+     * @param iterable<DummyDtoItem> $items
+     */
+    public function __construct(iterable $items)
+    {
+        $this->items = iterator_to_array((static function () use ($items) {
+            yield from $items;
+        })());
     }
 }
