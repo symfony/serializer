@@ -67,6 +67,8 @@ use Symfony\Component\Serializer\Tests\Fixtures\DummyWithObjectOrBool;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyWithObjectOrNull;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyWithStringObject;
 use Symfony\Component\Serializer\Tests\Normalizer\Features\ObjectDummyWithContextAttribute;
+use Symfony\Component\Serializer\Tests\Normalizer\Features\ObjectInner;
+use Symfony\Component\Serializer\Tests\Normalizer\Features\ObjectOuter;
 use Symfony\Component\TypeInfo\Type;
 
 class AbstractObjectNormalizerTest extends TestCase
@@ -1033,6 +1035,10 @@ class AbstractObjectNormalizerTest extends TestCase
 
     public function testDenormalizeIterableConstructorParameterDenormalizesItems()
     {
+        if (!method_exists(PropertyInfoExtractor::class, 'getType')) {
+            $this->markTestSkipped('The PropertyInfo component before Symfony 7.1 does not keep the collection value type for iterable constructor parameters.');
+        }
+
         $serializer = new Serializer([
             new ArrayDenormalizer(),
             new ObjectNormalizer(null, null, null, new PropertyInfoExtractor([], [new PhpDocExtractor(), new ReflectionExtractor()])),
