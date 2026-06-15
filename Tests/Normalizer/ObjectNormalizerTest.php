@@ -48,7 +48,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\GroupDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\GroupDummyWithIsPrefixedProperty;
 use Symfony\Component\Serializer\Tests\Fixtures\CircularReferenceDummy;
+use Symfony\Component\Serializer\Tests\Fixtures\DummyFirstChildQuux;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyPrivatePropertyWithoutGetter;
+use Symfony\Component\Serializer\Tests\Fixtures\DummyWithObjectConstructor;
 use Symfony\Component\Serializer\Tests\Fixtures\DummyWithUnion;
 use Symfony\Component\Serializer\Tests\Fixtures\FormatAndContextAwareNormalizer;
 use Symfony\Component\Serializer\Tests\Fixtures\MagicSetDummy;
@@ -1428,6 +1430,20 @@ class ObjectNormalizerTest extends TestCase
         $normalized = $normalizer->normalize($obj);
 
         $this->assertSame(['name' => 'John', 'foo' => 42, 'hello' => 'Hello i am John'], $normalized);
+    }
+
+    public function testDenormalizeWithAlreadyInstantiatedObject()
+    {
+        $nested = new DummyFirstChildQuux('foo');
+        $obj = $this->normalizer->denormalize(
+            ['nested' => $nested],
+            DummyWithObjectConstructor::class,
+            'any'
+        );
+
+        $this->assertInstanceOf(DummyWithObjectConstructor::class, $obj);
+        $this->assertSame($nested, $obj->nested);
+        $this->assertSame('foo', $obj->nested->getValue());
     }
 }
 
