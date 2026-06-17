@@ -192,7 +192,7 @@ class AttributeLoader implements LoaderInterface
 
                     $attributeMetadata->setSerializedPath($attribute->serializedPath);
                 } elseif ($attribute instanceof Ignore) {
-                    if ($attributeMetadata) {
+                    if ($attributeMetadata && !$this->hasPublicPropertyForAccessor($reflectionClass, $attributeName)) {
                         $attributeMetadata->setIgnore(true);
                     }
                 } elseif ($attribute instanceof Context) {

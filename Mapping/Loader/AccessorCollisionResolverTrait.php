@@ -62,6 +62,11 @@ trait AccessorCollisionResolverTrait
         return false;
     }
 
+    private function hasPublicPropertyForAccessor(\ReflectionClass $class, string $propName): bool
+    {
+        return $class->hasProperty($propName) && $class->getProperty($propName)->isPublic();
+    }
+
     private function hasAttributeNameCollision(\ReflectionClass $class, string $attributeName, string $methodName): bool
     {
         if ($this->hasPropertyForAccessor($class, $attributeName)) {
