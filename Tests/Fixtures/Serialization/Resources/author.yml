@@ -1,0 +1,4 @@
+Symfony\Component\Serializer\Tests\Fixtures\Serialization\Author:
+    attributes:
+        eyeColor:
+            groups: ['group1', 'group2']
